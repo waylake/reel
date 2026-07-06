@@ -24,7 +24,7 @@ targets:
     info:
       path: Reel/Info.plist
       properties:
-        LSUIElement: true # 메뉴바 전용 앱: Dock/Cmd+Tab에 없음
+        LSUIElement: false # Dock 미표시는 런타임에 .accessory로 처리
         CFBundleName: Reel
         CFBundleDisplayName: Reel
         LSMinimumSystemVersion: "14.0"
