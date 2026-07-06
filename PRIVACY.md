@@ -2,27 +2,25 @@
 
 **Last updated: June 2026**
 
-## Data Collection
+Reel is a local-first macOS application. No personal data is collected, stored, or transmitted.
 
-Reel is a local-first macOS application. **We do not collect, store, or transmit any personal data.**
+## What Reel stores on your device
 
-### What Reel does locally:
+- **Download queue** saved at `~/Library/Application Support/Reel/queue.json`
+- **Settings** in macOS UserDefaults
+- **Clipboard monitoring** checks clipboard text only to detect media URLs. The content is never sent anywhere.
 
-- **Download queue**: Saved on your Mac (`~/Library/Application Support/Reel/queue.json`)
-- **Settings**: Saved in macOS UserDefaults
-- **Clipboard monitoring**: Checks clipboard content only to detect media URLs — no data is sent externally
+## What Reel does not do
 
-### What Reel does NOT do:
+- No analytics or tracking
+- No telemetry
+- No crash reporting
+- No advertising
+- No server communication
 
-- ❌ No analytics or tracking
-- ❌ No telemetry
-- ❌ No crash reporting
-- ❌ No advertising
-- ❌ No data sent to any server
+## Third-party services
 
-### Third-party services:
-
-Reel uses `yt-dlp` and `ffmpeg` to download media from video platforms (YouTube, Vimeo, etc.). These connections are made directly between your Mac and the video platform — Reel does not intercept or log this traffic.
+Reel uses `yt-dlp` and `ffmpeg` to download media from video platforms (YouTube, Vimeo, etc.). These connections go directly from your Mac to the platform. Reel does not intercept or log this traffic.
 
 ## Contact
 
