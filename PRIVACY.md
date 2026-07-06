@@ -24,4 +24,4 @@ Reel uses `yt-dlp` and `ffmpeg` to download media from video platforms (YouTube,
 
 ## Contact
 
-waylake@gmail.com
+waylake@waylake.com

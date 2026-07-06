@@ -87,8 +87,8 @@ macOS 보안 경고가 뜨는 경우:
 ### 개인정보
 
 Reel은 모든 데이터를 기기 내에서만 보관한다. 외부 전송 없음.
-[PRIVACY.md](https://github.com/waylake/yt-dlp-swift/blob/main/PRIVACY.md)
+[PRIVACY.md](https://github.com/waylake/reel/blob/main/PRIVACY.md)
 
 ### 문의
 
-Gumroad 메시지 또는 waylake@gmail.com
+Gumroad 메시지 또는 waylake@waylake.com
