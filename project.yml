@@ -1,0 +1,44 @@
+name: Reel
+options:
+  bundleIdPrefix: com.waylake
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Reel:
+    type: application
+    platform: macOS
+    sources:
+      - path: Reel
+      - path: scripts
+        type: folder
+        buildPhase: none
+    info:
+      path: Reel/Info.plist
+      properties:
+        LSUIElement: true # 메뉴바 전용 앱: Dock/Cmd+Tab에 없음
+        CFBundleName: Reel
+        CFBundleDisplayName: Reel
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: "© 2026 waylake"
+    entitlements:
+      path: Reel/Reel.entitlements
+      properties:
+        com.apple.security.app-sandbox: false # 직접 배포 전제 — Process로 헬퍼 바이너리 실행 허용
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.waylake.reel
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: false
+        ENABLE_HARDENED_RUNTIME: true # 배포 필수
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        COMBINE_HIDPI_IMAGES: true
