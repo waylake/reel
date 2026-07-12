@@ -65,7 +65,7 @@ XcodeGen-managed project (no SPM). `ENABLE_HARDENED_RUNTIME` is on. Sandbox is o
 - Swift 5 + SwiftUI with `@Observable` (not `ObservableObject`)
 - `@MainActor` for all UI state
 - One type per file, PascalCase naming
-- Zero third-party dependencies — Foundation, SwiftUI, AppKit only
+- Minimal third-party dependencies (Sparkle for auto-updates)
 - Errors via `EngineError` enum with localized Korean messages
 
 ## Testing
