@@ -1,6 +1,6 @@
 #!/bin/bash
 # Reel 릴리즈 빌드
-# Developer ID 없이도 Gumroad 배포 가능 (zip → Gatekeeper 우회)
+# Developer ID 없이도 GitHub Releases 배포 가능 (zip → Gatekeeper 우회)
 #
 # 2026.06 기준: ad-hoc 서명(--sign -)이 필수입니다.
 # 서명 없이 빌드하면 macOS 14+에서 "손상됨" 오류가 나며 우회 불가합니다.
@@ -71,7 +71,7 @@ echo "   앱: $APP_PATH ($APP_SIZE)"
 echo "   배포: Reel.app.zip ($ZIP_SIZE)"
 echo ""
 echo "📋 다음 단계:"
-echo "   1. Reel.app.zip을 Gumroad에 업로드"
+echo "   1. Reel.app.zip을 GitHub Releases에 업로드"
 echo "   2. 설치 가이드: '압축 해제 후 Reel.app 실행'"
 echo ""
 echo "💡 ad-hoc 서명된 앱의 첫 실행:"
