@@ -35,7 +35,7 @@ targets:
         CFBundleDisplayName: Reel
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: "© 2026 waylake"
-        SUFeedURL: "https://raw.githubusercontent.com/waylake/reel/main/appcast.xml"
+        SUFeedURL: "https://github.com/waylake/reel/releases/latest/download/appcast.xml"
         SUPublicEDKey: "dCCtHkhUeKY/7Y48HUYsUr8RYdVPkALGzTEEBt4uYWA="
     entitlements:
       path: Reel/Reel.entitlements
