@@ -1,34 +1,35 @@
 import SwiftUI
 
-/// 화면 A — 메뉴바 팝오버. 앱의 주 진입점.
+/// 화면 A — 메뉴바 팝오버.
 ///
-/// 상태 분기:
-/// 1. yt-dlp 미설치 → 온보딩 배너 (설치 명령 복사)
-/// 2. 클립보드에 새 링크 → 감지 배너 / 이미 큐에 있으면 "추가됨" 변형
-/// 3. 입력 텍스트가 링크가 아님 → 조용한 힌트
-/// 4. 추가 직후 → 버튼이 "추가됨 ✓"로 1.2초 변형
-/// 5. 큐 비어 있음 → 안내 문구 / 있음 → 미니 큐(호버 시 빠른 동작)
+/// 단순한 구성:
+/// 1. 링크 입력창 (최상단) + 작은 컨트롤 행(프리셋·플레이리스트)
+/// 2. (있을 때만) 클립보드 감지 배너 / yt-dlp 미설치 배너
+/// 3. 큐 리스트 — 전체 항목 스크롤, 호버 시 빠른 동작
+/// 4. 푸터 — 전체 보기 · 설정 · 종료
 struct MenuBarView: View {
     @Environment(QueueStore.self) private var store
     @Environment(AppSettings.self) private var settings
     @Environment(ClipboardMonitor.self) private var clipboard
-    @Environment(\.openWindow) private var openWindow
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var urlText = ""
     @State private var preset: Preset = .bestMP4
+    @State private var playlistMode: PlaylistMode = .single
     @State private var justAdded = false
+    @State private var addedCount = 0
+    @State private var expanding = false
     @FocusState private var fieldFocused: Bool
 
     private var engineMissing: Bool { BinaryResolver.ytdlp == nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header
+            inputSection
             Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: Theme.s4) {
+                VStack(alignment: .leading, spacing: Theme.s3) {
                     if engineMissing {
                         SetupBanner()
                     }
@@ -37,45 +38,99 @@ struct MenuBarView: View {
                             .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .top)),
                                                     removal: .opacity))
                     }
-                    inputSection
-                    queueSection
+                    queueList
                 }
-                .padding(Theme.s4)
+                .padding(Theme.s3)
                 .animation(Theme.motion(reduceMotion), value: clipboard.detectedURL)
             }
-            .frame(maxHeight: 430)
+            .frame(maxHeight: 460)
 
             Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
             footer
         }
-        .onAppear { preset = settings.defaultPreset }
+        .onAppear {
+            preset = settings.defaultPreset
+            playlistMode = settings.defaultPlaylistMode
+        }
     }
 
-    // MARK: - 헤더
+    // MARK: - 입력
 
-    private var header: some View {
-        HStack(spacing: Theme.s2) {
-            Image(systemName: "arrow.down.circle.fill")
-                .foregroundStyle(Theme.accent)
-                .font(.system(size: 14, weight: .semibold))
-            Text("Reel").font(.system(size: 14, weight: .bold))
-            Spacer()
-            // 활동 요약 — 진행 중일 때만 조용히 표시
-            if store.activeCount > 0 {
-                HStack(spacing: Theme.s1) {
-                    StateDot(state: .downloading)
-                    Text("\(store.activeCount) 진행 중")
-                        .font(Theme.rowMeta).monospacedDigit()
-                        .foregroundStyle(.secondary)
+    private var inputSection: some View {
+        VStack(spacing: Theme.s2) {
+            HStack(spacing: Theme.s2) {
+                Image(systemName: "link")
+                    .font(.system(size: 11))
+                    .foregroundStyle(fieldFocused ? Theme.accent : .secondary)
+                TextField("링크 붙여넣기", text: $urlText)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 12.5))
+                    .focused($fieldFocused)
+                    .onSubmit { addFromInput() }
+                if !urlText.isEmpty {
+                    Button { urlText = "" } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.tertiary)
+                    }
+                    .buttonStyle(.plain)
                 }
-            } else if store.completedToday > 0 {
-                Text("오늘 \(store.completedToday)개 완료")
-                    .font(Theme.rowMeta).monospacedDigit()
-                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, Theme.s3)
+            .padding(.vertical, 9)
+            .background(Theme.fieldFill, in: RoundedRectangle(cornerRadius: Theme.rField, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.rField, style: .continuous)
+                    .strokeBorder(fieldFocused ? Theme.accent.opacity(0.5) : Color.clear, lineWidth: 1)
+            )
+            .animation(Theme.motion(reduceMotion), value: fieldFocused)
+
+            HStack(spacing: Theme.s2) {
+                Picker("프리셋", selection: $preset) {
+                    ForEach(Preset.allCases) { p in
+                        Label(p.shortTitle, systemImage: p.symbol).tag(p)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .controlSize(.small)
+                .fixedSize()
+                .help("저장 품질 프리셋")
+
+                Picker("플레이리스트", selection: $playlistMode) {
+                    ForEach(PlaylistMode.allCases) { m in
+                        Label(m.shortTitle, systemImage: m.symbol).tag(m)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .controlSize(.small)
+                .fixedSize()
+                .help(playlistMode == .all
+                      ? "전체 플레이리스트를 항목별로 받습니다"
+                      : "이 영상 1개만 받습니다")
+
+                Spacer()
+
+                if expanding {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Button {
+                        addFromInput()
+                    } label: {
+                        Label(justAdded ? "\(addedCount)개 추가됨" : "추가",
+                              systemImage: justAdded ? "checkmark" : "arrow.down")
+                            .frame(minWidth: 64)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(justAdded ? .green : Theme.accent)
+                    .controlSize(.small)
+                    .disabled(!canAdd)
+                    .keyboardShortcut(.defaultAction)
+                    .animation(Theme.motion(reduceMotion), value: justAdded)
+                }
             }
         }
-        .padding(.horizontal, Theme.s4)
-        .padding(.vertical, Theme.s3)
+        .padding(Theme.s3)
     }
 
     // MARK: - 클립보드 배너 (일반 / 중복 분기)
@@ -122,74 +177,10 @@ struct MenuBarView: View {
         )
     }
 
-    // MARK: - 입력
+    // MARK: - 큐 리스트
 
-    private var inputSection: some View {
-        VStack(alignment: .leading, spacing: Theme.s2) {
-            HStack(spacing: Theme.s2) {
-                Image(systemName: "link")
-                    .font(.system(size: 11))
-                    .foregroundStyle(fieldFocused ? Theme.accent : .secondary)
-                TextField("링크 붙여넣기", text: $urlText)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 12.5))
-                    .focused($fieldFocused)
-                    .onSubmit { add(url: urlText) }
-            }
-            .padding(.horizontal, Theme.s3)
-            .padding(.vertical, 9)
-            .background(Theme.fieldFill, in: RoundedRectangle(cornerRadius: Theme.rField, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.rField, style: .continuous)
-                    .strokeBorder(fieldFocused ? Theme.accent.opacity(0.5) : Color.clear, lineWidth: 1)
-            )
-            .animation(Theme.motion(reduceMotion), value: fieldFocused)
-
-            // 잘못된 링크 힌트 — 비어 있지 않은데 URL이 아닐 때만
-            if !urlText.isEmpty && inputURL == nil {
-                Label("지원하는 링크 형식이 아니에요", systemImage: "info.circle")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.orange)
-                    .transition(.opacity)
-            }
-
-            HStack(spacing: Theme.s2) {
-                Picker("프리셋", selection: $preset) {
-                    ForEach(Preset.allCases) { p in
-                        Label(p.shortTitle, systemImage: p.symbol).tag(p)
-                    }
-                }
-                .labelsHidden()
-                .pickerStyle(.menu)
-                .controlSize(.small)
-                .fixedSize()
-                .help("저장 품질 프리셋")
-
-                Spacer()
-
-                Button {
-                    add(url: urlText.isEmpty ? (clipboard.detectedURL ?? "") : urlText)
-                } label: {
-                    Label(justAdded ? "추가됨" : "저장",
-                          systemImage: justAdded ? "checkmark" : "arrow.down")
-                        .frame(minWidth: 64)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(justAdded ? .green : Theme.accent)
-                .disabled(currentInputURL == nil && !justAdded)
-                .keyboardShortcut(.defaultAction)
-                .animation(Theme.motion(reduceMotion), value: justAdded)
-            }
-        }
-        .animation(Theme.motion(reduceMotion), value: urlText.isEmpty)
-    }
-
-    // MARK: - 미니 큐
-
-    @ViewBuilder
-    private var queueSection: some View {
-        if store.recent.isEmpty {
-            // 빈 상태 — 첫 사용 안내는 짧게, 조용하게
+    @ViewBuilder private var queueList: some View {
+        if store.tasks.isEmpty {
             VStack(spacing: Theme.s1) {
                 Text("받은 항목이 여기에 표시됩니다")
                     .font(.system(size: 11))
@@ -198,24 +189,14 @@ struct MenuBarView: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, Theme.s4)
         } else {
-            VStack(alignment: .leading, spacing: Theme.s1) {
-                HStack {
-                    SectionLabel(text: "최근")
-                    Spacer()
-                    Button("전체 보기") { openMainWindow() }
-                        .buttonStyle(.plain)
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(Theme.accent)
-                }
-                VStack(spacing: 0) {
-                    ForEach(Array(store.recent.enumerated()), id: \.element.id) { index, task in
-                        if index > 0 {
-                            Rectangle().fill(Theme.hairlineColor)
-                                .frame(height: Theme.hairline)
-                                .padding(.leading, 56)   // 썸네일 폭만큼 들여쓴 헤어라인
-                        }
-                        MiniRow(task: task)
+            VStack(spacing: 0) {
+                ForEach(Array(store.tasks.enumerated()), id: \.element.id) { index, task in
+                    if index > 0 {
+                        Rectangle().fill(Theme.hairlineColor)
+                            .frame(height: Theme.hairline)
+                            .padding(.leading, 56)
                     }
+                    MiniRow(task: task)
                 }
             }
         }
@@ -226,10 +207,11 @@ struct MenuBarView: View {
     private var footer: some View {
         HStack(spacing: Theme.s3) {
             Button { openMainWindow() } label: {
-                Image(systemName: "square.grid.2x2")
+                Label("전체 보기", systemImage: "square.grid.2x2")
             }
-            .buttonStyle(.plain).foregroundStyle(.secondary)
-            .help("메인 윈도우 열기")
+            .buttonStyle(.plain)
+            .font(.system(size: 11))
+            .foregroundStyle(.secondary)
 
             Spacer()
 
@@ -256,9 +238,8 @@ struct MenuBarView: View {
             .buttonStyle(.plain).foregroundStyle(.secondary)
             .help("Reel 종료")
         }
-        .font(.system(size: 12))
-        .padding(.horizontal, Theme.s4)
-        .padding(.vertical, 9)
+        .padding(.horizontal, Theme.s3)
+        .padding(.vertical, 8)
     }
 
     private var destinationName: String {
@@ -267,18 +248,49 @@ struct MenuBarView: View {
 
     // MARK: - 동작
 
-    private var currentInputURL: String? {
-        let text = urlText.isEmpty ? (clipboard.detectedURL ?? "") : urlText
-        return ClipboardMonitor.extractMediaURL(from: text)
+    /// 입력 문자열에서 감지된 URL 목록 (여러 개 가능).
+    private var detectedURLs: [String] {
+        ClipboardMonitor.extractMediaURLs(from: urlText)
     }
-    private var inputURL: String? { ClipboardMonitor.extractMediaURL(from: urlText) }
 
+    private var canAdd: Bool { !detectedURLs.isEmpty }
+
+    private func addFromInput() {
+        let urls = detectedURLs
+        guard !urls.isEmpty else { return }
+        add(urls: urls)
+    }
+
+    /// 단일 링크 추가 (클립보드 배너).
     private func add(url raw: String) {
         guard let url = ClipboardMonitor.extractMediaURL(from: raw) else { return }
-        store.add(url: url, preset: preset)
-        clipboard.markHandled(url)
+        add(urls: [url])
+    }
+
+    /// 여러 링크 추가 — 플레이리스트 모드면 첫 링크만 확장, 나머지는 단일 추가.
+    private func add(urls: [String]) {
+        clipboard.markHandled(urls.first ?? "")
+        if playlistMode == .all, let first = urls.first {
+            expanding = true
+            Task { @MainActor in
+                store.add(url: first, preset: preset, playlistMode: .all)
+                if urls.count > 1 {
+                    store.addMany(urls: Array(urls.dropFirst()), preset: preset, playlistMode: .single)
+                }
+                expanding = false
+                addedCount = urls.count
+                flashAdded()
+            }
+        } else {
+            let n = store.addMany(urls: urls, preset: preset, playlistMode: .single)
+            addedCount = n
+            flashAdded()
+        }
         urlText = ""
         fieldFocused = false
+    }
+
+    private func flashAdded() {
         justAdded = true
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(1.2))
@@ -287,8 +299,7 @@ struct MenuBarView: View {
     }
 
     private func openMainWindow() {
-        NSApplication.shared.activate(ignoringOtherApps: true)
-        openWindow(id: "main")
+        (NSApp.delegate as? AppDelegate)?.showMainWindow()
     }
 }
 
@@ -352,6 +363,11 @@ private struct MiniRow: View {
                                     tint: task.state.tint,
                                     indeterminate: task.state == .encoding)
                 }
+                if let rt = task.retryText, task.state == .queued {
+                    Text(rt)
+                        .font(.system(size: 9.5))
+                        .foregroundStyle(.orange)
+                }
             }
             Spacer(minLength: Theme.s1)
             trailing
@@ -394,8 +410,14 @@ private struct MiniRow: View {
                     .help(task.errorMessage ?? "실패")
             }
         case .queued:
-            Text("대기")
-                .font(.system(size: 10)).foregroundStyle(.tertiary)
+            if task.retryCount > 0 {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 11)).foregroundStyle(.orange)
+                    .help("일시적 오류 — 재시도 예정")
+            } else {
+                Text("대기")
+                    .font(.system(size: 10)).foregroundStyle(.tertiary)
+            }
         case .paused:
             if hovering {
                 QuickIconButton(symbol: "play.circle", help: "재개") { store.resume(task) }

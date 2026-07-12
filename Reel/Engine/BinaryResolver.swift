@@ -29,6 +29,14 @@ enum BinaryResolver {
 
     /// ffmpeg가 있는 디렉터리 — yt-dlp에 --ffmpeg-location으로 전달.
     static var ffmpegLocation: String? { ffmpeg?.deletingLastPathComponent().path }
+
+    /// yt-dlp가 앱 번들에 포함된 바이너리인지 (배포 빌드).
+    /// 번들본은 쓰기 불가능해 자체 업데이트(-U)가 안 되므로 UI에서 안내한다.
+    static var isBundled: Bool {
+        guard let y = ytdlp else { return false }
+        let resources = Bundle.main.bundleURL.appending(path: "Resources/").path
+        return y.path.hasPrefix(resources)
+    }
 }
 
 enum EngineError: LocalizedError {

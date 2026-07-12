@@ -68,4 +68,27 @@ final class ClipboardMonitor {
         // 그 외 호스트도 경로가 있으면 허용(yt-dlp가 1800+ 사이트 지원).
         return url.path.count > 1 ? text : nil
     }
+
+    /// 여러 줄/콤마/공백으로 섞인 문자열에서 미디어 URL을 모두 추출(중복 제거, 순서 유지).
+    static func extractMediaURLs(from text: String) -> [String] {
+        var seen = Set<String>()
+        var result: [String] = []
+        let chunks = text.split(whereSeparator: { $0.isNewline || $0 == "," || $0 == "\t" })
+        for chunk in chunks {
+            let piece = chunk.trimmingCharacters(in: .whitespaces)
+            guard !piece.isEmpty else { continue }
+            // 공백으로 더 쪼개져 있을 수도 있으니 각 토큰도 검사
+            for token in piece.split(whereSeparator: { $0 == " " }).map(String.init) {
+                guard let url = extractMediaURL(from: token), !seen.contains(url) else { continue }
+                seen.insert(url)
+                result.append(url)
+            }
+            // 조각 전체로도 재시도 (URL에 공백은 없으므로 무해)
+            if let url = extractMediaURL(from: piece), !seen.contains(url) {
+                seen.insert(url)
+                result.append(url)
+            }
+        }
+        return result
+    }
 }

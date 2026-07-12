@@ -20,6 +20,50 @@ actor DownloadEngine {
         return meta
     }
 
+    // MARK: - 플레이리스트 정보
+
+    /// 링크가 플레이리스트인지 판별하고, 항목 목록을 가져온다.
+    /// 단일 영상이면 isPlaylist == false, entries는 비어 있다.
+    func fetchPlaylistInfo(url: String) async throws -> MediaMetadata.PlaylistInfo {
+        guard let bin = BinaryResolver.ytdlp else { throw EngineError.ytdlpNotFound }
+        let result = try await runCapturing(bin: bin, args: ArgumentBuilder.playlistArgs(url: url))
+        guard result.code == 0, let data = result.stdout.data(using: .utf8) else {
+            let msg = result.stderr.isEmpty ? "종료 코드 \(result.code)" : result.stderr
+            throw EngineError.metadataFailed(msg.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        guard let info = MediaMetadata.playlistInfo(from: data) else {
+            throw EngineError.metadataFailed("플레이리스트 정보 파싱 실패")
+        }
+        return info
+    }
+
+    // MARK: - yt-dlp 버전 / 업데이트
+
+    /// 현재 yt-dlp 버전 문자열 (첫 줄). 없으면 nil.
+    func ytdlpVersion() async -> String? {
+        guard let bin = BinaryResolver.ytdlp else { return nil }
+        guard let result = try? await runCapturing(bin: bin, args: ["--version"]) else { return nil }
+        return result.stdout.split(whereSeparator: \.isNewline).first.map(String.init)
+    }
+
+    /// yt-dlp 자체 업데이트 (`-U`). 앱 번들에 포함된 바이너리는 쓰기 불가 → 앱 업데이트로 유도.
+    /// - Returns: (성공 여부, 사용자에게 보여줄 메시지)
+    func updateYtdlp() async -> (ok: Bool, message: String) {
+        guard let bin = BinaryResolver.ytdlp else {
+            return (false, "yt-dlp를 찾을 수 없습니다.")
+        }
+        if BinaryResolver.isBundled {
+            return (false, "앱 번들에 포함된 yt-dlp는 자체 업데이트할 수 없어요. Reel 앱을 업데이트해 주세요.")
+        }
+        let result = try? await runCapturing(bin: bin, args: ["-U"])
+        guard let result else { return (false, "업데이트 실행에 실패했습니다.") }
+        let out = (result.stdout + result.stderr).trimmingCharacters(in: .whitespacesAndNewlines)
+        // yt-dlp -U 성공 시 "Updated yt-dlp to version ..." 또는 "yt-dlp is up to date"
+        let ok = result.code == 0 && (out.contains("up to date") || out.contains("Updated"))
+        let message = out.isEmpty ? (ok ? "최신 상태입니다." : "종료 코드 \(result.code)") : out
+        return (ok, message)
+    }
+
     // MARK: - 지원 사이트(추출기) 목록
 
     /// 설치된 yt-dlp가 지원하는 추출기 ID 목록. 항상 현재 버전 기준.

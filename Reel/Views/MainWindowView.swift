@@ -1,16 +1,20 @@
 import SwiftUI
 
-/// 화면 B — 메인 윈도우. 사이드바(필터) + 큐 리스트 + 하단 상태바.
+/// 화면 B — 메인 윈도우. 사이드바(필터 + 통계) + 큐 리스트 + 하단 상태바.
 ///
 /// 분기:
 /// - 필터별로 다른 빈 상태 문구/아이콘 (전부 다르게)
 /// - 완료 필터에서만 "완료 지우기" 노출
-/// - 드롭은 리스트가 비어 있어도 동작 (영역 전체)
+/// - 통계 필터는 리스트 대신 StatisticsView 표시
+/// - 드롭은 리스트가 비어 있어도 동작 (영역 전체) — .txt 파일은 줄 단위로 URL 추출
 struct MainWindowView: View {
     @Environment(QueueStore.self) private var store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var filter: QueueFilter = .inProgress
     @State private var urlText = ""
+    @State private var preset: Preset = .bestMP4
+    @State private var playlistMode: PlaylistMode = .single
+    @State private var expanding = false
     @State private var dropTargeted = false
 
     var body: some View {
@@ -35,6 +39,7 @@ struct MainWindowView: View {
             Section("라이브러리") {
                 sidebarRow(.all)
                 sidebarRow(.audio)
+                sidebarRow(.stats)
             }
         }
         .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
@@ -70,13 +75,7 @@ struct MainWindowView: View {
             statusBar
         }
         .dropDestination(for: URL.self) { urls, _ in
-            var added = false
-            for url in urls {
-                if let media = ClipboardMonitor.extractMediaURL(from: url.absoluteString) {
-                    store.add(url: media); added = true
-                }
-            }
-            return added
+            handleDrop(urls)
         } isTargeted: { dropTargeted = $0 }
         .overlay {
             if dropTargeted {
@@ -99,7 +98,7 @@ struct MainWindowView: View {
                 Image(systemName: "plus")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
-                TextField("링크 붙여넣기 또는 이 창에 드래그", text: $urlText)
+                TextField("링크 붙여넣기 (여러 개 가능) 또는 이 창에 드래그", text: $urlText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 12.5))
                     .onSubmit(addFromField)
@@ -108,8 +107,28 @@ struct MainWindowView: View {
             .padding(.vertical, 8)
             .background(Theme.fieldFill, in: RoundedRectangle(cornerRadius: Theme.rField, style: .continuous))
 
-            if inputURL != nil {
-                Button("추가", action: addFromField)
+            // 프리셋 + 플레이리스트 모드
+            Picker("프리셋", selection: $preset) {
+                ForEach(Preset.allCases) { p in Text(p.shortTitle).tag(p) }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .controlSize(.small)
+            .fixedSize()
+
+            Picker("플레이리스트", selection: $playlistMode) {
+                ForEach(PlaylistMode.allCases) { m in Text(m.shortTitle).tag(m) }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .controlSize(.small)
+            .fixedSize()
+            .help(playlistMode == .all ? "전체 플레이리스트" : "이 영상만")
+
+            if expanding {
+                ProgressView().controlSize(.small)
+            } else if !detectedURLs.isEmpty {
+                Button("추가 (\(detectedURLs.count))", action: addFromField)
                     .buttonStyle(.borderedProminent)
                     .tint(Theme.accent)
                     .controlSize(.small)
@@ -122,24 +141,30 @@ struct MainWindowView: View {
             }
         }
         .padding(Theme.s3)
-        .animation(Theme.motion(reduceMotion), value: inputURL != nil)
+        .animation(Theme.motion(reduceMotion), value: !detectedURLs.isEmpty)
+        .animation(Theme.motion(reduceMotion), value: expanding)
     }
 
-    // MARK: - 콘텐츠 (필터별 빈 상태 분기)
+    // MARK: - 콘텐츠 (필터별 빈 상태 분기 / 통계)
 
     @ViewBuilder private var content: some View {
-        let items = store.filtered(filter)
-        if items.isEmpty {
-            emptyState(for: filter)
+        if filter == .stats {
+            StatisticsView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            ScrollView {
-                LazyVStack(spacing: Theme.s2 - 2) {
-                    ForEach(items) { task in
-                        DownloadRowView(task: task)
+            let items = store.filtered(filter)
+            if items.isEmpty {
+                emptyState(for: filter)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: Theme.s2 - 2) {
+                        ForEach(items) { task in
+                            DownloadRowView(task: task)
+                        }
                     }
+                    .padding(Theme.s3)
                 }
-                .padding(Theme.s3)
             }
         }
     }
@@ -166,6 +191,8 @@ struct MainWindowView: View {
             case .audio:
                 ("music.note", "오디오 항목 없음",
                  "MP3·M4A 프리셋으로 받은 항목이 여기에 모입니다.")
+            case .stats:
+                ("chart.bar.xaxis", "통계", "")
             }
         }()
         ContentUnavailableView {
@@ -183,6 +210,9 @@ struct MainWindowView: View {
                 HStack(spacing: Theme.s1) {
                     StateDot(state: .downloading)
                     Text("\(store.activeCount) 진행 중")
+                    if store.overallProgress > 0 {
+                        Text("· \(Int(store.overallProgress * 100))%")
+                    }
                 }
             }
             if store.queuedCount > 0 {
@@ -208,11 +238,46 @@ struct MainWindowView: View {
 
     // MARK: - 동작
 
-    private var inputURL: String? { ClipboardMonitor.extractMediaURL(from: urlText) }
+    /// 입력 필드에서 감지된 URL 목록.
+    private var detectedURLs: [String] {
+        ClipboardMonitor.extractMediaURLs(from: urlText)
+    }
 
     private func addFromField() {
-        guard let url = inputURL else { return }
-        store.add(url: url)
+        let urls = detectedURLs
+        guard !urls.isEmpty else { return }
+        if playlistMode == .all {
+            expanding = true
+            Task { @MainActor in
+                store.add(url: urls.first!, preset: preset, playlistMode: .all)
+                if urls.count > 1 {
+                    store.addMany(urls: Array(urls.dropFirst()), preset: preset, playlistMode: .single)
+                }
+                expanding = false
+            }
+        } else {
+            store.addMany(urls: urls, preset: preset, playlistMode: .single)
+        }
         urlText = ""
+    }
+
+    /// 드롭 — http URL 직접 드래그 또는 .txt 파일(줄 단위 URL) 처리.
+    private func handleDrop(_ urls: [URL]) -> Bool {
+        var added = false
+        var mediaURLs: [String] = []
+        for url in urls {
+            if url.isFileURL, url.pathExtension.lowercased() == "txt" {
+                if let text = try? String(contentsOf: url, encoding: .utf8) {
+                    mediaURLs.append(contentsOf: ClipboardMonitor.extractMediaURLs(from: text))
+                }
+            } else if let media = ClipboardMonitor.extractMediaURL(from: url.absoluteString) {
+                mediaURLs.append(media)
+            }
+        }
+        if !mediaURLs.isEmpty {
+            store.addMany(urls: mediaURLs, preset: preset, playlistMode: playlistMode)
+            added = true
+        }
+        return added
     }
 }

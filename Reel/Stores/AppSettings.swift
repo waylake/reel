@@ -23,6 +23,14 @@ final class AppSettings {
     var cookiesFromBrowser: String      // "" | "safari" | "chrome" | "firefox"
     var includeVideoID: Bool            // 파일명에 [영상 ID] 포함 여부 (기본: 제목만)
 
+    // 플레이리스트
+    var defaultPlaylistMode: PlaylistMode
+    var maxPlaylistItems: Int
+
+    // 완료 항목 자동 정리
+    var autoClearCompleted: Bool
+    var autoClearAfterDays: Int
+
     private static let key = "reel.settings.v1"
 
     init() {
@@ -43,6 +51,10 @@ final class AppSettings {
         sponsorBlock = s.sponsorBlock
         cookiesFromBrowser = s.cookiesFromBrowser
         includeVideoID = s.includeVideoID ?? false
+        defaultPlaylistMode = PlaylistMode(rawValue: s.defaultPlaylistMode ?? PlaylistMode.single.rawValue) ?? .single
+        maxPlaylistItems = s.maxPlaylistItems ?? 50
+        autoClearCompleted = s.autoClearCompleted ?? false
+        autoClearAfterDays = s.autoClearAfterDays ?? 7
     }
 
     var outputDirectory: URL {
@@ -55,7 +67,7 @@ final class AppSettings {
     }
 
     /// 설정 + 프리셋으로 다운로드 옵션 조립.
-    func makeOptions(preset: Preset) -> DownloadOptions {
+    func makeOptions(preset: Preset, playlistMode: PlaylistMode = .single) -> DownloadOptions {
         var o = DownloadOptions()
         o.preset = preset
         o.embedSubtitles = embedSubtitles
@@ -74,6 +86,8 @@ final class AppSettings {
         o.outputTemplate = includeVideoID ? "%(title)s [%(id)s].%(ext)s" : "%(title)s.%(ext)s"
         o.concurrentFragments = lowPowerProfile ? 2 : 4
         o.limitRate = lowPowerProfile ? "8M" : nil
+        o.playlistMode = playlistMode
+        o.maxPlaylistItems = maxPlaylistItems
         return o
     }
 
@@ -93,7 +107,11 @@ final class AppSettings {
             embedThumbnail: embedThumbnail,
             sponsorBlock: sponsorBlock,
             cookiesFromBrowser: cookiesFromBrowser,
-            includeVideoID: includeVideoID
+            includeVideoID: includeVideoID,
+            defaultPlaylistMode: defaultPlaylistMode.rawValue,
+            maxPlaylistItems: maxPlaylistItems,
+            autoClearCompleted: autoClearCompleted,
+            autoClearAfterDays: autoClearAfterDays
         )
         if let data = try? JSONEncoder().encode(s) {
             UserDefaults.standard.set(data, forKey: Self.key)
@@ -115,7 +133,11 @@ final class AppSettings {
         var embedThumbnail: Bool
         var sponsorBlock: Bool
         var cookiesFromBrowser: String
-        var includeVideoID: Bool? = false   // 옵셔널: 구버전 JSON과 호환
+        var includeVideoID: Bool? = false
+        var defaultPlaylistMode: String?
+        var maxPlaylistItems: Int?
+        var autoClearCompleted: Bool?
+        var autoClearAfterDays: Int?
 
         static let `default` = Stored(
             defaultPreset: Preset.bestMP4.rawValue,
@@ -132,7 +154,11 @@ final class AppSettings {
             embedThumbnail: false,
             sponsorBlock: false,
             cookiesFromBrowser: "",
-            includeVideoID: false
+            includeVideoID: false,
+            defaultPlaylistMode: PlaylistMode.single.rawValue,
+            maxPlaylistItems: 50,
+            autoClearCompleted: false,
+            autoClearAfterDays: 7
         )
     }
 }

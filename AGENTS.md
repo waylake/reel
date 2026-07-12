@@ -12,6 +12,7 @@ Project generated via `xcodegen` from `project.yml` (no SPM).
 Reel/
 ├── ReelApp.swift          # @main entry point (MenuBarExtra + WindowGroup + Settings)
 ├── Views/                 # SwiftUI views
+│   └── StatisticsView.swift   # 다운로드 통계 뷰
 ├── Stores/
 │   ├── QueueStore.swift   # @Observable, single source of truth for download queue + persistence
 │   ├── AppSettings.swift  # UserDefaults-backed settings

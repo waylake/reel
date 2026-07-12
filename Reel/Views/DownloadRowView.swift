@@ -97,7 +97,11 @@ struct DownloadRowView: View {
                         .lineLimit(1).truncationMode(.middle)
                 }
             case .queued:
-                Text("대기 중 · \(task.options.preset.title)")
+                if let rt = task.retryText {
+                    Text("대기 · \(rt)")
+                } else {
+                    Text("대기 중 · \(task.options.preset.title)")
+                }
             case .paused:
                 Text("일시정지됨 · \(Int(task.progress * 100))%까지 받음")
             default:
