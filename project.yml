@@ -4,6 +4,7 @@ packages:
     url: https://github.com/sparkle-project/Sparkle
     from: 2.6.0
 options:
+  xcodeVersion: "15.0"
   bundleIdPrefix: com.waylake
   deploymentTarget:
     macOS: "14.0"
