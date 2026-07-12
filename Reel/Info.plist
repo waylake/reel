@@ -26,5 +26,9 @@
 	<false/>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 waylake</string>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/waylake/reel/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>dCCtHkhUeKY/7Y48HUYsUr8RYdVPkALGzTEEBt4uYWA=</string>
 </dict>
 </plist>

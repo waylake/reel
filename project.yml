@@ -1,4 +1,8 @@
 name: Reel
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
 options:
   bundleIdPrefix: com.waylake
   deploymentTarget:
@@ -16,6 +20,8 @@ targets:
   Reel:
     type: application
     platform: macOS
+    dependencies:
+      - package: Sparkle
     sources:
       - path: Reel
       - path: scripts
@@ -29,6 +35,8 @@ targets:
         CFBundleDisplayName: Reel
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: "© 2026 waylake"
+        SUFeedURL: "https://raw.githubusercontent.com/waylake/reel/main/appcast.xml"
+        SUPublicEDKey: "dCCtHkhUeKY/7Y48HUYsUr8RYdVPkALGzTEEBt4uYWA="
     entitlements:
       path: Reel/Reel.entitlements
       properties:

@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let settings = AppSettings()
     let store: QueueStore
     let clipboard = ClipboardMonitor()
+    let updater = UpdaterStore()
     private var mainWindow: NSWindow?
 
     override init() {
@@ -93,6 +94,7 @@ struct ReelApp: App {
                 .environment(appDelegate.store)
                 .environment(appDelegate.settings)
                 .environment(appDelegate.clipboard)
+                .environment(appDelegate.updater)
                 .frame(width: 380)
                 .task { appDelegate.clipboard.start() }
         } label: {
@@ -105,6 +107,9 @@ struct ReelApp: App {
                     NSApp.orderFrontStandardAboutPanel(nil)
                 }
                 .keyboardShortcut("i", modifiers: .command)
+                Button("업데이트 확인…") {
+                    appDelegate.updater.checkForUpdates()
+                }
             }
             CommandGroup(replacing: .newItem) { EmptyView() }
             CommandGroup(replacing: .saveItem) { EmptyView() }
@@ -122,6 +127,7 @@ struct ReelApp: App {
             SettingsView()
                 .environment(appDelegate.store)
                 .environment(appDelegate.settings)
+                .environment(appDelegate.updater)
         }
     }
 

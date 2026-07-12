@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(QueueStore.self) private var store
+    @Environment(UpdaterStore.self) private var updater
 
     var body: some View {
         TabView {
@@ -79,6 +80,11 @@ struct SettingsView: View {
                      : "예: 영상 제목.mp4 — 제목이 같은 영상을 받으면 덮어쓸 수 있어요.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+            Section("앱 업데이트") {
+                Button("업데이트 확인…") {
+                    updater.checkForUpdates()
+                }
             }
         }
         .formStyle(.grouped)

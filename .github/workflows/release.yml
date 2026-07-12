@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Tools
+        run: |
+          brew install xcodegen
+          brew install yt-dlp ffmpeg
+          
+      - name: Build and Bundle
+        run: ./scripts/build-release.sh
+        
+      - name: Setup Sparkle
+        run: |
+          mkdir -p /tmp/Sparkle
+          curl -L -s -o /tmp/Sparkle/Sparkle.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/2.6.0/Sparkle-2.6.0.tar.xz
+          tar -xf /tmp/Sparkle/Sparkle.tar.xz -C /tmp/Sparkle
+          
+      - name: Generate Appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          mkdir -p updates
+          cp Reel.app.zip updates/
+          echo "$SPARKLE_PRIVATE_KEY" | /tmp/Sparkle/bin/generate_appcast --ed-key-file - updates/
+          cp updates/appcast.xml .
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Reel.app.zip
+            appcast.xml
+          generate_release_notes: true
