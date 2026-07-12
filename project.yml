@@ -34,6 +34,8 @@ targets:
         LSUIElement: false # Dock 미표시는 런타임에 .accessory로 처리
         CFBundleName: Reel
         CFBundleDisplayName: Reel
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: "© 2026 waylake"
         SUFeedURL: "https://github.com/waylake/reel/releases/latest/download/appcast.xml"
