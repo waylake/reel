@@ -104,7 +104,15 @@ struct ReelApp: App {
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("Reel 정보…") {
-                    NSApp.orderFrontStandardAboutPanel(nil)
+                    let creditsText = "Developed by waylake\nGitHub: https://github.com/waylake"
+                    let credits = NSMutableAttributedString(
+                        string: creditsText,
+                        attributes: [.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)]
+                    )
+                    let linkRange = (creditsText as NSString).range(of: "https://github.com/waylake")
+                    credits.addAttribute(.link, value: "https://github.com/waylake", range: linkRange)
+                    
+                    NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])
                 }
                 .keyboardShortcut("i", modifiers: .command)
                 Button("업데이트 확인…") {
