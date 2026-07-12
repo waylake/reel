@@ -16,7 +16,8 @@ Reel/
 ├── Stores/
 │   ├── QueueStore.swift   # @Observable, single source of truth for download queue + persistence
 │   ├── AppSettings.swift  # UserDefaults-backed settings
-│   └── ClipboardMonitor.swift
+│   ├── ClipboardMonitor.swift
+│   └── UpdaterStore.swift # Sparkle SPUStandardUpdaterController wrapper
 ├── Engine/
 │   ├── DownloadEngine.swift   # actor — spawns yt-dlp Process, emits AsyncStream<EngineEvent>
 │   ├── ArgumentBuilder.swift  # DownloadOptions → yt-dlp CLI arguments
@@ -71,8 +72,16 @@ XcodeGen-managed project (no SPM). `ENABLE_HARDENED_RUNTIME` is on. Sandbox is o
 
 No automated test target yet. Add one via `project.yml` with XCTest when needed.
 
-## Release
+## Release & Auto-Update
 
+Reel uses **Sparkle 2** for in-app updates.
+Deployment is fully automated via GitHub Actions (`.github/workflows/release.yml`).
+
+1. Push a tag starting with `v` (e.g., `git tag v1.0.0 && git push --tags`).
+2. The pipeline builds the app, signs it, and runs `generate_appcast` using the EdDSA private key (`SPARKLE_PRIVATE_KEY` in GitHub Secrets).
+3. The `.zip` and `appcast.xml` are uploaded to GitHub Releases automatically.
+
+To build manually locally:
 ```bash
 ./scripts/build-release.sh   # Release build + bundles yt-dlp/ffmpeg into .app
 ./scripts/notarize.sh        # Apple notarization

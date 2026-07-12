@@ -53,12 +53,16 @@ xcodegen generate
 open Reel.xcodeproj
 ```
 
-## 릴리즈 빌드
+## 배포 및 자동 업데이트 (CI/CD)
 
-```bash
-./scripts/build-release.sh
-# → Reel.app.zip
-```
+Reel은 **Sparkle 2** 프레임워크를 통해 앱 내 자동 업데이트를 지원하며, 배포 파이프라인은 GitHub Actions로 완전히 자동화되어 있습니다.
+
+1. `v1.x.x` 형식의 태그를 Push하면 `.github/workflows/release.yml` 파이프라인이 실행됩니다.
+2. `scripts/build-release.sh`를 통해 릴리즈 빌드 및 `.app.zip` 압축본을 생성합니다.
+3. Sparkle의 `generate_appcast`를 사용해 EdDSA 서명된 `appcast.xml` 피드를 자동 생성합니다.
+4. 생성된 바이너리와 피드 파일이 GitHub Releases에 업로드되며, 기존 설치된 앱에 자동으로 업데이트가 푸시됩니다.
+
+> **참고**: Sparkle 자동 업데이트 서명에 사용되는 개인키는 GitHub Repository Secrets의 `SPARKLE_PRIVATE_KEY`에 저장되어 안전하게 관리됩니다.
 
 ## 개인정보
 
