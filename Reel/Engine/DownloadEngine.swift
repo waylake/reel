@@ -46,22 +46,58 @@ actor DownloadEngine {
         return result.stdout.split(whereSeparator: \.isNewline).first.map(String.init)
     }
 
-    /// yt-dlp 자체 업데이트 (`-U`). 앱 번들에 포함된 바이너리는 쓰기 불가 → 앱 업데이트로 유도.
+    /// yt-dlp 자체 업데이트.
+    /// - Homebrew 등 쓰기 가능한 설치: `yt-dlp -U` 시도
+    /// - 앱 번들 포함본 또는 `-U` 실패: GitHub 최신 릴리스를 받아
+    ///   Application Support/Reel/bin 에 자체 관리본으로 설치.
+    ///   BinaryResolver가 관리본을 최우선 사용하므로 재시작 없이 즉시 적용된다.
     /// - Returns: (성공 여부, 사용자에게 보여줄 메시지)
     func updateYtdlp() async -> (ok: Bool, message: String) {
         guard let bin = BinaryResolver.ytdlp else {
             return (false, "yt-dlp를 찾을 수 없습니다.")
         }
-        if BinaryResolver.isBundled {
-            return (false, "앱 번들에 포함된 yt-dlp는 자체 업데이트할 수 없어요. Reel 앱을 업데이트해 주세요.")
+        if !BinaryResolver.isBundled {
+            let result = try? await runCapturing(bin: bin, args: ["-U"])
+            if let result, result.code == 0 {
+                let out = (result.stdout + result.stderr).trimmingCharacters(in: .whitespacesAndNewlines)
+                let ok = out.contains("up to date") || out.contains("Updated")
+                let message = out.isEmpty ? (ok ? "최신 상태입니다." : "종료 코드 \(result.code)") : out
+                if ok { return (true, message) }
+            }
+            // -U 실패(패키지 관리자 설치 등) — 관리본 설치로 폴백
         }
-        let result = try? await runCapturing(bin: bin, args: ["-U"])
-        guard let result else { return (false, "업데이트 실행에 실패했습니다.") }
-        let out = (result.stdout + result.stderr).trimmingCharacters(in: .whitespacesAndNewlines)
-        // yt-dlp -U 성공 시 "Updated yt-dlp to version ..." 또는 "yt-dlp is up to date"
-        let ok = result.code == 0 && (out.contains("up to date") || out.contains("Updated"))
-        let message = out.isEmpty ? (ok ? "최신 상태입니다." : "종료 코드 \(result.code)") : out
-        return (ok, message)
+        return await installManagedYtdlp()
+    }
+
+    /// GitHub 최신 yt-dlp(macOS Universal)를 받아 자체 관리 경로에 설치.
+    /// 유튜브 추출기는 앱 릴리즈 주기보다 빨리 낡기 때문에(봇 방지 대응),
+    /// 번들본이 구버전이어도 이 경로로 즉시 최신화한다.
+    private func installManagedYtdlp() async -> (ok: Bool, message: String) {
+        guard let releaseURL = URL(string: "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos") else {
+            return (false, "다운로드 URL 구성 실패")
+        }
+        let dest = BinaryResolver.managedDir.appending(path: "yt-dlp")
+        do {
+            let (data, response) = try await URLSession.shared.data(from: releaseURL)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+                throw EngineError.updateFailed("다운로드 실패 (HTTP \(code))")
+            }
+            try FileManager.default.createDirectory(at: BinaryResolver.managedDir, withIntermediateDirectories: true)
+            try? FileManager.default.removeItem(at: dest) // 기존 관리본 교체
+            try data.write(to: dest, options: .atomic) // 단독 바이너리(~37MB)라도 일괄 수신 후 원자적 기록
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: dest.path)
+
+            // 정상 실행 검증 — 실패하면 롤백해 기존 바이너리를 지킨다
+            guard let check = try? await runCapturing(bin: dest, args: ["--version"]), check.code == 0 else {
+                try? FileManager.default.removeItem(at: dest)
+                return (false, "내려받은 yt-dlp가 정상 실행되지 않아 설치를 되돌렸습니다.")
+            }
+            let ver = check.stdout.split(whereSeparator: \.isNewline).first.map(String.init) ?? "?"
+            return (true, "yt-dlp \(ver)(으)로 업데이트했어요. 바로 적용됩니다.")
+        } catch {
+            return (false, "업데이트 실패: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - 지원 사이트(추출기) 목록

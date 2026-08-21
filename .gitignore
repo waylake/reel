@@ -47,6 +47,8 @@ node_modules/
 *.dmg
 *.zip
 *.app/
+appcast.xml
+updates/
 
 # Secrets
 .env

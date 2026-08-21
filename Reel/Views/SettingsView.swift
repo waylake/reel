@@ -153,10 +153,8 @@ struct SettingsView: View {
                             Text("yt-dlp 업데이트")
                         }
                     }
-                    .disabled(updating || BinaryResolver.isBundled)
-                    .help(BinaryResolver.isBundled
-                          ? "번들 포함 바이너리는 자체 업데이트 불가 — 앱 업데이트 필요"
-                          : "yt-dlp -U 로 자체 업데이트")
+                    .disabled(updating)
+                    .help("GitHub 최신 릴리스를 받아 앱 안에 설치합니다. 재시작 없이 바로 적용돼요.")
                     if let msg = updateMessage {
                         Label(msg, systemImage: updateOk ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                             .font(.caption)
@@ -164,7 +162,7 @@ struct SettingsView: View {
                             .lineLimit(3)
                     }
                     if BinaryResolver.isBundled {
-                        Text("앱 번들에 포함된 yt-dlp는 자체 업데이트할 수 없어요. Reel 앱을 업데이트해 주세요.")
+                        Text("번들 포함 yt-dlp는 앱 릴리즈 시점에 고정돼요. 업데이트를 누르면 최신본을 앱 지원 폴더에 따로 설치해 그것을 우선 사용합니다.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -172,7 +170,7 @@ struct SettingsView: View {
             } header: {
                 Text("yt-dlp")
             } footer: {
-                Text("yt-dlp는 사이트 추출기를 자주 업데이트합니다. 다운로드가 갑자기 안 되면 먼저 업데이트를 시도해 보세요.")
+                Text("yt-dlp는 유튜브 봇 방지 대응 때문에 자주 업데이트됩니다. 다운로드가 갑자기 안 되면(403 · 페이지를 다시 로드해야 합니다 등) 먼저 업데이트를 시도해 보세요.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
