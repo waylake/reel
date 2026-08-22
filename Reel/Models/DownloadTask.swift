@@ -84,6 +84,39 @@ final class DownloadTask: Identifiable {
     /// 다운로드 호스트(사이트) — 통계용.
     var host: String? { URL(string: url)?.host?.lowercased() }
 
+    // MARK: - 행 메타라인 논리 (#12 — 뷰가 아닌 모델이 테스트한다)
+
+    /// 행 메타라인의 표시 단계. 문구 결정을 뷰에서 분리해 순수 유닛 테스트가
+    /// 가능하게 한다 — SwiftUI 텍스트는 NSView 하위뷰로 노출되지 않기 때문.
+    enum MetaPhase: Equatable {
+        case extracting                                  // 추출 단계 — 바이트가 흐르기 전
+        case downloading(size: String, speed: String, eta: String)
+        case waiting(retry: String?)                     // 대기 (재시도 표기 포함)
+        case encoding
+        case paused(percent: Int)
+        case completed(subtitle: String)
+        case failed                                     // 기타/실패 — 부제만
+    }
+
+    /// 현재 상태의 메타 단계. #11: 다운로딩 + 진행률 0 + 속도 없음 = 추출 단계.
+    var metaPhase: MetaPhase {
+        switch state {
+        case .downloading:
+            if progress == 0 && speedText.isEmpty { return .extracting }
+            return .downloading(size: sizeText, speed: speedText, eta: etaText)
+        case .encoding:
+            return .encoding
+        case .completed:
+            return .completed(subtitle: metaSubtitle)
+        case .queued:
+            return .waiting(retry: retryText)
+        case .paused:
+            return .paused(percent: Int(progress * 100))
+        case .failed, .cancelled:
+            return .failed
+        }
+    }
+
     // MARK: - 영속화 스냅샷
 
     struct Snapshot: Codable {

@@ -60,11 +60,18 @@ final class QueueStore {
     @ObservationIgnored private var speedWindow: [UUID: [Double]] = [:]
     private static let progressFlushInterval: TimeInterval = 0.3
 
+    /// 세션당 1회만 yt-dlp 자동 업데이트를 돌렸는지 (#11) — 37MB 다운로드 반복 방지.
+    @ObservationIgnored private var didAutoUpdateYtdlp = false
+
     init(settings: AppSettings) {
         self.settings = settings
         load()
         autoClearOldCompleted()
-        requestNotificationAuth()
+        // 테스트 중에는 알림 권한 프롬프트(개인정보 동의창)를 띄우지 않는다. (#12)
+        // XCTest 실행 여부는 표준 환경변수로 감지한다.
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
+            requestNotificationAuth()
+        }
         pump()   // 복원된 대기 항목 이어받기
     }
 
@@ -344,10 +351,17 @@ final class QueueStore {
         let canRetry = task.retryCount < DownloadTask.maxRetries && Self.isRetryableError(message)
         guard canRetry else {
             task.state = .failed
-            task.errorMessage = message
+            // 봇 감지 계열이면 사용자가 취할 조치를 안내 — 재시도만으론 안 풀리는 경우 대비 (#11)
+            task.errorMessage = Self.isYouTubeBlockError(message)
+                ? message + "\n\nYouTube 봇 감지로 실패했어요. 설정 → 엔진 → yt-dlp 업데이트 후 다시 시도해 보세요."
+                : message
             task.speedText = ""; task.etaText = ""
+            lastProgressFlush[task.id] = nil
+            speedWindow[task.id] = nil
             return
         }
+        // 봇 감지 계열이면 세션 1회 yt-dlp를 조용히 최신화 — 재시도가 최신 추출기로 돌게 한다. (#11)
+        if Self.isYouTubeBlockError(message) { triggerYtdlpAutoUpdate() }
         // 자동 재시도 예약
         task.retryCount += 1
         task.state = .queued
@@ -357,6 +371,17 @@ final class QueueStore {
         task.retryAfter = Date().addingTimeInterval(delay)
         save()
         scheduleRetryPump(after: delay, for: task.id)
+    }
+
+    /// 세션당 1회, 봇 감지 오류 시 yt-dlp를 조용히 최신화. (#11)
+    /// 업데이트가 끝나기 전 재시도가 먼저 떠도 무해 — 관리본이 교체되는 즉시
+    /// BinaryResolver가 그것을 우선 사용하므로 이후 시도부터 최신 추출기로 돈다.
+    private func triggerYtdlpAutoUpdate() {
+        guard !didAutoUpdateYtdlp else { return }
+        didAutoUpdateYtdlp = true
+        Task { @MainActor [weak self] in
+            _ = await self?.engine.updateYtdlp()
+        }
     }
 
     /// 보류 시각이 지난 뒤 pump()를 한 번 더 돌려 재시도를 시작.
@@ -378,7 +403,11 @@ final class QueueStore {
         let keywords = ["429", "502", "503", "504", "timeout", "timed out",
                         "connection", "temporary", "rate limit", "rate-limit",
                         "network", "unreachable", "reset by peer",
-                        "socket", "fragment", "retry"]
+                        "socket", "fragment", "retry",
+                        // 유튜브 봇 감지 계열 — 일시적으로 발생/해제를 반복하므로 재시도가 유효 (#11)
+                        "the page needs to be reloaded", "403", "forbidden",
+                        "unable to download video data", "unable to extract",
+                        "failed to extract", "playability"]
         // 명백한 영구 실패(연령 제한·지역 제한·권한)는 제외
         let permanent = ["sign in to confirm", "age-restricted", "geo restricted",
                          "private video", "members-only", "not available"]
@@ -386,11 +415,22 @@ final class QueueStore {
         return keywords.contains(where: { m.contains($0) })
     }
 
+    /// 유튜브 봇 감지 계열 판별 — yt-dlp 자동 업데이트의 트리거. (#11)
+    /// 이 오류들의 1숙위 해법은 엔진 최신화다. docs/ytdlp-notes.md 참조.
+    static func isYouTubeBlockError(_ message: String) -> Bool {
+        let m = message.lowercased()
+        let markers = ["the page needs to be reloaded", "403", "forbidden",
+                       "unable to download video data", "unable to extract",
+                       "sign in to confirm"]
+        return markers.contains(where: { m.contains($0) })
+    }
+
     // MARK: - 속도 매끄럽게 ( throth + 이동평균 )
 
     /// 속도 문자열을 바이트/초로 환산해 5샘플 이동평균으로 매끈하게.
     /// (화면용 문자열, 업데이트된 윈도우)를 함께 돌려준다.
-    private static func smoothedSpeed(_ raw: String, window: [Double]) -> (String, [Double]) {
+    /// internal — 유닛 테스트(#12)가 직접 검증한다.
+    static func smoothedSpeed(_ raw: String, window: [Double]) -> (String, [Double]) {
         guard let bps = parseSpeedBytesPerSec(raw) else { return (raw, window) }
         var w = window
         w.append(bps)
@@ -400,19 +440,21 @@ final class QueueStore {
     }
 
     /// "5.2MiB/s" · "320KiB/s" · "1.2GB/s" → 바이트/초. 판별 불가면 nil.
-    private static func parseSpeedBytesPerSec(_ s: String) -> Double? {
-        let t = s.trimmingCharacters(in: .whitespaces)
-        // "... /s" → ".../s" (yt-dlp 일부 버전은 공백 포함)
-        let cleaned = t.replacingOccurrences(of: " /s", with: "/s")
-        guard let slash = cleaned.lastIndex(of: "/") else { return nil }
-        let numPart = String(cleaned[..<slash]).trimmingCharacters(in: .whitespaces)
-        let unitPart = String(cleaned[cleaned.index(after: slash)...])  // "MiB/s" 등
-        guard let value = Double(numPart) else { return nil }
-        let u = unitPart.lowercased()
-        if u.hasPrefix("mib") || u.hasPrefix("mb") { return value * 1_000_000 }
-        if u.hasPrefix("kib") || u.hasPrefix("kb") { return value * 1000 }
-        if u.hasPrefix("gib") || u.hasPrefix("gb") { return value * 1_000_000_000 }
-        return value   // 숫자만 → 초당 바이트
+    /// internal — 유닛 테스트(#12)가 직접 검증한다.
+    static func parseSpeedBytesPerSec(_ s: String) -> Double? {
+        let cleaned = s.replacingOccurrences(of: " /s", with: "/s")
+            .trimmingCharacters(in: .whitespaces)
+        // "/s" 접미사 제거 → "5.2MiB"
+        var body = cleaned
+        if body.hasSuffix("/s") { body = String(body.dropLast(2)) }
+        // 접두 숫자(소수점 포함) 추출 → "5.2" / "MiB" 분리
+        let digits = body.prefix { $0.isNumber || $0 == "." }
+        guard !digits.isEmpty, let value = Double(digits), value > 0 else { return nil }
+        let unit = body.dropFirst(digits.count).lowercased()
+        if unit.contains("g") { return value * 1_000_000_000 }
+        if unit.contains("m") { return value * 1_000_000 }
+        if unit.contains("k") { return value * 1_000 }
+        return value   // B/s 또는 단위 없음
     }
 
     /// 바이트/초 → 사람이 읽는 속도 문자열 ("5.2 MB/s").

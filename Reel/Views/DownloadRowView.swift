@@ -77,34 +77,36 @@ struct DownloadRowView: View {
         .accessibilityLabel("\(task.title), \(task.state.label)")
     }
 
-    // MARK: - 메타 라인 (상태별 분기)
+    // MARK: - 메타 라인 (상태별 분기 — 결정은 DownloadTask.metaPhase가, 렌더링만 여기서)
 
     @ViewBuilder private var metaLine: some View {
         HStack(spacing: Theme.s2) {
-            switch task.state {
-            case .downloading:
-                if !task.sizeText.isEmpty { Text(task.sizeText) }
-                if !task.speedText.isEmpty { Text(task.speedText) }
-                if !task.etaText.isEmpty {
-                    Text("남은 시간 \(task.etaText)")
-                }
+            switch task.metaPhase {
+            case .extracting:
+                // 추출 단계(웨이브페이지·player API 수신 중) — 바이트가 흐르기 전이라
+                // 0%로 멈춰 보이던 문제. (#11)
+                Text("영상 정보 가져오는 중…")
+            case .downloading(let size, let speed, let eta):
+                if !size.isEmpty { Text(size) }
+                if !speed.isEmpty { Text(speed) }
+                if !eta.isEmpty { Text("남은 시간 \(eta)") }
             case .encoding:
                 Text("후처리 중 — 병합·변환")
-            case .completed:
-                if !task.metaSubtitle.isEmpty { Text(task.metaSubtitle) }
+            case .completed(let subtitle):
+                if !subtitle.isEmpty { Text(subtitle) }
                 if let path = task.outputPath {
                     Text(URL(fileURLWithPath: path).lastPathComponent)
                         .lineLimit(1).truncationMode(.middle)
                 }
-            case .queued:
-                if let rt = task.retryText {
-                    Text("대기 · \(rt)")
+            case .waiting(let retry):
+                if let retry {
+                    Text("대기 · \(retry)")
                 } else {
                     Text("대기 중 · \(task.options.preset.title)")
                 }
-            case .paused:
-                Text("일시정지됨 · \(Int(task.progress * 100))%까지 받음")
-            default:
+            case .paused(let percent):
+                Text("일시정지됨 · \(percent)%까지 받음")
+            case .failed:
                 if !task.metaSubtitle.isEmpty { Text(task.metaSubtitle) }
             }
         }

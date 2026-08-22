@@ -1,0 +1,52 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Tools
+        run: |
+          brew install xcodegen yt-dlp ffmpeg
+
+      - name: Generate Project
+        run: xcodegen generate
+
+      - name: Unit & Hosted View Tests (XCTest + Swift Testing)
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Reel.xcodeproj \
+            -scheme Reel \
+            -destination "platform=macOS" \
+            -only-testing:ReelTests \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify --quiet || true
+          # xcbeautify 없어도 동작 — 결과 요약은 아래 재실행으로 확인
+          xcodebuild test \
+            -project Reel.xcodeproj \
+            -scheme Reel \
+            -destination "platform=macOS" \
+            -only-testing:ReelTests \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | grep -E "Test Suite 'All tests'|TEST (SUCCEEDED|FAILED)|Executed.*tests" | tail -5
+
+      - name: Smoke Test (앱 실행 생존 검증)
+        run: |
+          xcodebuild build \
+            -project Reel.xcodeproj \
+            -scheme Reel \
+            -configuration Release \
+            -destination "platform=macOS" \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO
+          ./scripts/smoke-test.sh DerivedData/Build/Products/Release/Reel.app

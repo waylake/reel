@@ -19,6 +19,18 @@ jobs:
           brew install xcodegen
           brew install yt-dlp ffmpeg
           
+      - name: Test Gate (배포 전 전체 테스트 — #12)
+        run: |
+          xcodegen generate
+          xcodebuild test \
+            -project Reel.xcodeproj \
+            -scheme Reel \
+            -destination "platform=macOS" \
+            -only-testing:ReelTests \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | grep -E "Test Suite 'All tests'|TEST (SUCCEEDED|FAILED)|Executed.*tests" | tail -3
+          test "${PIPESTATUS[0]}" -eq 0
+      
       - name: Build and Bundle
         run: ./scripts/build-release.sh
         

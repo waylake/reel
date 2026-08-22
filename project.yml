@@ -14,8 +14,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "1.1.0"
-    CURRENT_PROJECT_VERSION: "5"
+    MARKETING_VERSION: "1.1.1"
+    CURRENT_PROJECT_VERSION: "6"
 
 targets:
   Reel:
@@ -53,3 +53,22 @@ targets:
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: ""
         COMBINE_HIDPI_IMAGES: true
+
+  ReelTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [ReelTests]
+    dependencies:
+      - target: Reel
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Reel:
+    build:
+      targets:
+        Reel: all
+    test:
+      targets:
+        - ReelTests

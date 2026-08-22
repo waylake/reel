@@ -1,7 +1,8 @@
 import Foundation
 
 /// yt-dlp 프로세스가 내보내는 이벤트. UI는 이 스트림을 소비해 상태를 갱신한다.
-enum EngineEvent: Sendable {
+/// Equatable — 유닛 테스트(#12)가 파싱 결과를 직접 비교한다.
+enum EngineEvent: Sendable, Equatable {
     case started
     case phase(DownloadState)                       // 예: 후처리 → .encoding
     case progress(fraction: Double, speed: String, eta: String, downloaded: Int64, total: Int64?)
@@ -55,6 +56,9 @@ enum ProgressParser {
 
     private static func clean(_ raw: String) -> String {
         let t = raw.trimmingCharacters(in: .whitespaces)
-        return (t == "Unknown" || t == "NA" || t == "N/A") ? "" : t
+        if t == "Unknown" || t == "NA" || t == "N/A" { return "" }
+        // "Unknown B/s" 같은 변형도 빈 값으로 — _speed_str이 값을 모를 때 이 형태를 낸다.
+        if t.hasPrefix("Unknown ") { return "" }
+        return t
     }
 }

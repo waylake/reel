@@ -21,6 +21,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // UI 테스트 중에는 부작용(활성화·윈도우 강제 오픈)을 줄여
+        // XCUITest 러너 부트스트랩과 경합하지 않게 한다. (#12)
+        if ProcessInfo.processInfo.arguments.contains("UITESTING") { return }
         // 시작은 regular: Dock + Cmd+Tab에 표시.
         NSApp.setActivationPolicy(.regular)
         // 메인 GUI 윈도우를 즉시 띄운다 — 메뉴바만 나오는 문제 해결의 핵심.
