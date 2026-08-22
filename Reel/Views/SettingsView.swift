@@ -31,10 +31,11 @@ struct SettingsView: View {
                 Picker("플레이리스트 기본 모드", selection: bind(\.defaultPlaylistMode)) {
                     ForEach(PlaylistMode.allCases) { m in Text(m.title).tag(m) }
                 }
-                Stepper(value: bind(\.maxPlaylistItems), in: 1...200) {
+                Stepper(value: bind(\.maxPlaylistItems), in: 1...2000) {
                     LabeledContent("전체 받기 최대 항목", value: "\(settings.maxPlaylistItems)개")
                 }
                 .disabled(settings.defaultPlaylistMode == .single)
+                .help("일반 플레이리스트는 이 개수까지만 받습니다. 채널은 미리보기의 '전체 다운로드'를 누르면 이 제한 없이 전부 받아요.")
             }
             Section("동시성") {
                 Stepper(value: bind(\.maxConcurrent), in: 1...6) {

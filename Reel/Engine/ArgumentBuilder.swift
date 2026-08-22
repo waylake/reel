@@ -11,10 +11,16 @@ enum ArgumentBuilder {
         ["--ignore-config", "--dump-single-json", "--no-playlist", "--no-warnings", "--no-progress", url]
     }
 
-    /// 플레이리스트 감지용 인자 (--flat-playlist).
-    /// 단일 영상 URL이면 1개짜리 결과, 플레이리스트면 entries 배열을 준다.
+    /// 플레이리스트/채널 감지용 인자 (--flat-playlist).
+    ///
+    /// 단일 영상 URL이면 1줄, 플레이리스트·채널은 항목당 1줄을 준다.
+    /// `--dump-single-json`은 항목이 수백 개인 큰 채널에서 JSON이 잘려 개수가
+    /// 잘못 나오던 문제가 있어 줄 기반 `--print`로 바꾼다. (제목은 파이프를 포함할 수
+    /// 있어 마지막 필드에 둔다.)
     static func playlistArgs(url: String) -> [String] {
-        ["--ignore-config", "--flat-playlist", "--dump-single-json", "--no-warnings", "--no-progress", url]
+        ["--ignore-config", "--flat-playlist",
+         "--print", "\(sentinel)|%(id)s|%(url)s|%(duration)s|%(uploader)s|%(title)s",
+         "--no-warnings", "--no-progress", url]
     }
 
     /// 실제 다운로드 인자.

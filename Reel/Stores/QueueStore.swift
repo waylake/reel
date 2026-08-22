@@ -54,6 +54,12 @@ final class QueueStore {
     @ObservationIgnored private var consumers: [UUID: Task<Void, Never>] = [:]
     @ObservationIgnored private var retryTimers: [UUID: Task<Void, Never>] = [:]
 
+    // 진행률/속도는 yt-dlp이 1초에 여러 번(단편 4개 동시) 내보내 화면이 흔들리던 문제를
+    // ① 0.3초 주기 스로틀 ② 속도 5샘플 이동평균으로 완화.
+    @ObservationIgnored private var lastProgressFlush: [UUID: Date] = [:]
+    @ObservationIgnored private var speedWindow: [UUID: [Double]] = [:]
+    private static let progressFlushInterval: TimeInterval = 0.3
+
     init(settings: AppSettings) {
         self.settings = settings
         load()
@@ -159,6 +165,8 @@ final class QueueStore {
         retryTimers[id] = nil
         consumers[id]?.cancel()
         consumers[id] = nil
+        lastProgressFlush[id] = nil
+        speedWindow[id] = nil
         tasks.removeAll { $0.id == id }
         save()
     }
@@ -176,6 +184,11 @@ final class QueueStore {
     /// yt-dlp 버전 문자열.
     func ytdlpVersion() async -> String? {
         await engine.ytdlpVersion()
+    }
+
+    /// 채널/플레이리스트 미리보기 — 항목 수·채널명. (실 다운로드 아님)
+    func fetchPlaylistInfo(url: String) async -> MediaMetadata.PlaylistInfo? {
+        try? await engine.fetchPlaylistInfo(url: url)
     }
 
     /// yt-dlp 자체 업데이트 시도. (성공 여부, 메시지)
@@ -289,23 +302,38 @@ final class QueueStore {
             task.state = s
         case .progress(let fraction, let speed, let eta, let downloaded, let total):
             if task.state != .encoding { task.state = .downloading }
-            task.progress = fraction
-            task.speedText = speed
-            task.etaText = eta
+            // 바이트량은 매 이벤트 반영(정밀), 진행률·속도·ETA만 스로틀해서 화면이 매끄럽게.
             task.downloadedBytes = downloaded
             if let total { task.totalBytes = total }
+            let now = Date()
+            let due = (lastProgressFlush[task.id].map { now.timeIntervalSince($0) >= Self.progressFlushInterval } ?? true)
+            guard due else { break }
+            lastProgressFlush[task.id] = now
+            // 진행률 — total이 있으면 downloaded/total로 정밀화 (단편별 fraction 흔들림 제거).
+            var f = fraction
+            if let total, total > 0 { f = min(1, Double(downloaded) / Double(total)) }
+            task.progress = f
+            // 속도 — 5샘플 이동평균으로 숫자가 점프하지 않게.
+            let (smoothed, newWindow) = Self.smoothedSpeed(speed, window: speedWindow[task.id] ?? [])
+            task.speedText = smoothed
+            speedWindow[task.id] = newWindow
+            task.etaText = eta
         case .destination(let path), .finalFile(let path):
             task.outputPath = path
         case .completed:
             task.state = .completed
             task.progress = 1
             task.speedText = ""; task.etaText = ""
+            lastProgressFlush[task.id] = nil
+            speedWindow[task.id] = nil
             task.completedAt = Date()
             notifyComplete(task)
         case .cancelled:
             if task.state != .completed { task.state = .cancelled }
             task.retryAfter = nil
             task.speedText = ""; task.etaText = ""
+            lastProgressFlush[task.id] = nil
+            speedWindow[task.id] = nil
         case .failed(let message):
             handleFailure(message, for: task)
         }
@@ -358,6 +386,44 @@ final class QueueStore {
         return keywords.contains(where: { m.contains($0) })
     }
 
+    // MARK: - 속도 매끄럽게 ( throth + 이동평균 )
+
+    /// 속도 문자열을 바이트/초로 환산해 5샘플 이동평균으로 매끈하게.
+    /// (화면용 문자열, 업데이트된 윈도우)를 함께 돌려준다.
+    private static func smoothedSpeed(_ raw: String, window: [Double]) -> (String, [Double]) {
+        guard let bps = parseSpeedBytesPerSec(raw) else { return (raw, window) }
+        var w = window
+        w.append(bps)
+        if w.count > 5 { w.removeFirst(w.count - 5) }
+        let avg = w.reduce(0, +) / Double(w.count)
+        return (formatSpeedBytesPerSec(avg), w)
+    }
+
+    /// "5.2MiB/s" · "320KiB/s" · "1.2GB/s" → 바이트/초. 판별 불가면 nil.
+    private static func parseSpeedBytesPerSec(_ s: String) -> Double? {
+        let t = s.trimmingCharacters(in: .whitespaces)
+        // "... /s" → ".../s" (yt-dlp 일부 버전은 공백 포함)
+        let cleaned = t.replacingOccurrences(of: " /s", with: "/s")
+        guard let slash = cleaned.lastIndex(of: "/") else { return nil }
+        let numPart = String(cleaned[..<slash]).trimmingCharacters(in: .whitespaces)
+        let unitPart = String(cleaned[cleaned.index(after: slash)...])  // "MiB/s" 등
+        guard let value = Double(numPart) else { return nil }
+        let u = unitPart.lowercased()
+        if u.hasPrefix("mib") || u.hasPrefix("mb") { return value * 1_000_000 }
+        if u.hasPrefix("kib") || u.hasPrefix("kb") { return value * 1000 }
+        if u.hasPrefix("gib") || u.hasPrefix("gb") { return value * 1_000_000_000 }
+        return value   // 숫자만 → 초당 바이트
+    }
+
+    /// 바이트/초 → 사람이 읽는 속도 문자열 ("5.2 MB/s").
+    private static func formatSpeedBytesPerSec(_ bps: Double) -> String {
+        guard bps > 0 else { return "" }
+        let f = ByteCountFormatter()
+        f.countStyle = .file
+        f.allowsNonnumericFormatting = false
+        return f.string(fromByteCount: Int64(bps)) + "/s"
+    }
+
     // MARK: - 메타데이터 / 플레이리스트 확장
 
     private func prefetchMetadata(for task: DownloadTask) {
@@ -401,7 +467,11 @@ final class QueueStore {
             self.consumers[placeholder.id]?.cancel()
             self.consumers[placeholder.id] = nil
 
-            let entries = Array(info.entries.prefix(max(maxItems, 1)))
+            // 채널(=@핸들)은 "전체"가 명시적이므로 maxPlaylistItems로 잘지 말고
+            // 실제 항목 수를 전부. 일반 플레이리스트는 안전장치(50)로 제한.
+            let isChannel = (MediaLink(url)?.kind == .channel)
+            let limit = isChannel ? info.entries.count : max(maxItems, 1)
+            let entries = Array(info.entries.prefix(limit))
             var inserted: [DownloadTask] = []
             for (i, entry) in entries.enumerated() {
                 // 항목별 단일 다운로드 옵션 — 각각 개별 진행률 추적

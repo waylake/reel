@@ -70,10 +70,19 @@ struct MainWindowView: View {
         VStack(spacing: 0) {
             toolbar
             Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
+            // 채널 링크면 입력 아래에 미리보기(채널명 + 영상 수)를 떠다니는 카드로.
+            if let channel = detectedChannel {
+                ChannelPreview(url: channel.raw,
+                                 handleLabel: channel.channelHandle ?? channel.raw)
+                    .padding(Theme.s3)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
+            }
             content
             Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
             statusBar
         }
+        .animation(Theme.motion(reduceMotion), value: detectedChannel?.raw)
         .dropDestination(for: URL.self) { urls, _ in
             handleDrop(urls)
         } isTargeted: { dropTargeted = $0 }
@@ -241,6 +250,14 @@ struct MainWindowView: View {
     /// 입력 필드에서 감지된 URL 목록.
     private var detectedURLs: [String] {
         ClipboardMonitor.extractMediaURLs(from: urlText)
+    }
+
+    /// 입력에서 채널 링크를 감지 (채널은 미리보기로 개수를 먼저 보여줘야 함).
+    private var detectedChannel: MediaLink? {
+        for raw in detectedURLs {
+            if let link = MediaLink(raw), link.kind == .channel { return link }
+        }
+        return nil
     }
 
     private func addFromField() {

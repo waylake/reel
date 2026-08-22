@@ -38,10 +38,17 @@ struct MenuBarView: View {
                             .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .top)),
                                                     removal: .opacity))
                     }
+                    // 채널 링크면 입력 아래에 미리보기(채널명 + 영상 수) 카드.
+                    if let channel = detectedChannel {
+                        ChannelPreview(url: channel.raw,
+                                         handleLabel: channel.channelHandle ?? channel.raw)
+                            .transition(.opacity)
+                    }
                     queueList
                 }
                 .padding(Theme.s3)
                 .animation(Theme.motion(reduceMotion), value: clipboard.detectedURL)
+                .animation(Theme.motion(reduceMotion), value: detectedChannel?.raw)
             }
             .frame(maxHeight: 460)
 
@@ -251,6 +258,14 @@ struct MenuBarView: View {
     /// 입력 문자열에서 감지된 URL 목록 (여러 개 가능).
     private var detectedURLs: [String] {
         ClipboardMonitor.extractMediaURLs(from: urlText)
+    }
+
+    /// 입력에서 채널 링크 감지 — 큰 채널은 받을 전에 영상 수를 먼저 보여줘야 함.
+    private var detectedChannel: MediaLink? {
+        for raw in detectedURLs {
+            if let link = MediaLink(raw), link.kind == .channel { return link }
+        }
+        return nil
     }
 
     private var canAdd: Bool { !detectedURLs.isEmpty }
