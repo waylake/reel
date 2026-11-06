@@ -60,16 +60,8 @@ struct DownloadRowView: View {
                 .transition(.opacity)
             }
         }
-        .padding(Theme.s3)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous)
-                .fill(hovering ? Theme.rowFillHover : Theme.rowFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous)
-                .strokeBorder(Theme.rowBorder, lineWidth: Theme.hairline)
-        )
-        .contentShape(RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous))
+        .padding(.vertical, Theme.s1)
+        .contentShape(Rectangle())
         .onHover { hovering = $0 }
         .animation(Theme.motion(reduceMotion), value: hovering)
         .contextMenu { contextItems }

@@ -19,16 +19,6 @@ final class MediaLinkTests: XCTestCase {
         }
     }
 
-    func testChannelHandleExtraction() {
-        XCTAssertEqual(MediaLink("https://www.youtube.com/@원빅월드쇼")?.channelHandle, "원빅월드쇼")
-        // percent-encoding 복원
-        XCTAssertEqual(MediaLink("https://www.youtube.com/@%EC%9B%90%EB%B9%85%EC%9B%94%EB%93%9C%EC%87%BC")?.channelHandle, "원빅월드쇼")
-        // /videos 하위 경로 제거
-        XCTAssertEqual(MediaLink("https://www.youtube.com/@handle/videos")?.channelHandle, "handle")
-        // /channel/UC… 형태는 핸들 없음
-        XCTAssertNil(MediaLink("https://youtube.com/channel/UCxxxx")?.channelHandle)
-    }
-
     // MARK: - 플레이리스트
 
     func testPlaylistURLs() {
@@ -39,7 +29,6 @@ final class MediaLinkTests: XCTestCase {
         ] {
             XCTAssertEqual(MediaLink(url)?.kind, .playlist, "플레이리스트여야 함: \(url)")
         }
-        XCTAssertEqual(MediaLink("https://www.youtube.com/playlist?list=PL123")?.playlistID, "PL123")
     }
 
     // MARK: - 단일 영상
@@ -65,12 +54,5 @@ final class MediaLinkTests: XCTestCase {
     func testOtherSites() {
         // yt-dlp 지원 사이트는 경로가 있으면 허용
         XCTAssertEqual(MediaLink("https://vimeo.com/12345")?.kind, .other)
-        XCTAssertEqual(MediaLink("https://vimeo.com/12345")?.previewKindLabel, "링크")
-    }
-
-    func testIsCollection() {
-        XCTAssertTrue(MediaLink("https://youtube.com/@h")!.isCollection)
-        XCTAssertTrue(MediaLink("https://youtube.com/playlist?list=PL")!.isCollection)
-        XCTAssertFalse(MediaLink("https://youtu.be/abc")!.isCollection)
     }
 }

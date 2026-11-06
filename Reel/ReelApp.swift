@@ -77,6 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.setContentSize(NSSize(width: 940, height: 580))
         window.minSize = NSSize(width: 720, height: 440)
+        window.toolbarStyle = .unified   // 제목줄과 툴바를 하나로 — 최신 macOS 기본 형태
         window.center()
         // 닫혀도 객체 유지 — 메뉴바에서 재열기 시 같은 윈도우를 다시 보인다.
         window.isReleasedWhenClosed = false

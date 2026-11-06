@@ -93,12 +93,4 @@ enum ArgumentBuilder {
         a.append(url)
         return a
     }
-
-    /// 화면 C(포맷 인스펙터) 하단 "실제 실행될 명령" 미리보기용 문자열.
-    static func previewCommand(url: String, options: DownloadOptions) -> String {
-        let args = downloadArgs(url: url, options: options)
-            .map { $0.contains(" ") ? "\"\($0)\"" : $0 }
-            .joined(separator: " ")
-        return "yt-dlp \(args)"
-    }
 }

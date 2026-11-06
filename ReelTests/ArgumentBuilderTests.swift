@@ -92,11 +92,4 @@ final class ArgumentBuilderTests: XCTestCase {
         })
         XCTAssertTrue(hasTemplate, "progress-template가 sentinel을 포함해야 함")
     }
-
-    func testPreviewCommandIsQuoted() {
-        let cmd = ArgumentBuilder.previewCommand(url: "URL", options: makeOptions())
-        XCTAssertTrue(cmd.hasPrefix("yt-dlp "))
-        // 경로에 공백이 있으면 따옴표로 감싸져야 함
-        XCTAssertTrue(cmd.contains("\"/tmp\"") || cmd.contains("-P /tmp"))
-    }
 }

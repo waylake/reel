@@ -60,18 +60,6 @@ struct HostedViewTests {
         render(DownloadRowView(task: task).environment(store))
     }
 
-    // MARK: - ChannelPreview / MainWindowView 렌더링 생존
-
-    @Test("채널 미리보기 카드가 렌더링된다")
-    func channelPreviewRenders() {
-        let store = makeStore()
-        render(
-            ChannelPreview(url: "https://youtube.com/@test", handleLabel: "test")
-                .environment(store)
-                .frame(width: 380, height: 120)
-        )
-    }
-
     @Test("메인 윈도우가 빈 큐로 렌더링된다")
     func mainWindowRendersEmpty() {
         let settings = AppSettings()

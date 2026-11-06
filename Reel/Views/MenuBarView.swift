@@ -2,32 +2,21 @@ import SwiftUI
 
 /// 화면 A — 메뉴바 팝오버.
 ///
-/// 단순한 구성:
-/// 1. 링크 입력창 (최상단) + 작은 컨트롤 행(프리셋·플레이리스트)
-/// 2. (있을 때만) 클립보드 감지 배너 / yt-dlp 미설치 배너
-/// 3. 큐 리스트 — 전체 항목 스크롤, 호버 시 빠른 동작
-/// 4. 푸터 — 전체 보기 · 설정 · 종료
+/// 입력창 없이 클립보드로 동작한다:
+/// - 팝오버 어디를 누르면 클립보드 링크가 큐에 추가된다 (⌘V와 동일)
+/// 1. (있을 때만) 클립보드 감지 배너 / yt-dlp 미설치 배너
+/// 2. 진행 중 항목 목록
+/// 3. 푸터 — 완료 요약 · 저장 위치 · 설정 · 종료
 struct MenuBarView: View {
     @Environment(QueueStore.self) private var store
     @Environment(AppSettings.self) private var settings
     @Environment(ClipboardMonitor.self) private var clipboard
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var urlText = ""
-    @State private var preset: Preset = .bestMP4
-    @State private var playlistMode: PlaylistMode = .single
-    @State private var justAdded = false
-    @State private var addedCount = 0
-    @State private var expanding = false
-    @FocusState private var fieldFocused: Bool
-
     private var engineMissing: Bool { BinaryResolver.ytdlp == nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            inputSection
-            Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
-
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.s3) {
                     if engineMissing {
@@ -38,106 +27,18 @@ struct MenuBarView: View {
                             .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .top)),
                                                     removal: .opacity))
                     }
-                    // 채널 링크면 입력 아래에 미리보기(채널명 + 영상 수) 카드.
-                    if let channel = detectedChannel {
-                        ChannelPreview(url: channel.raw,
-                                         handleLabel: channel.channelHandle ?? channel.raw)
-                            .transition(.opacity)
-                    }
                     queueList
                 }
                 .padding(Theme.s3)
                 .animation(Theme.motion(reduceMotion), value: clipboard.detectedURL)
-                .animation(Theme.motion(reduceMotion), value: detectedChannel?.raw)
             }
             .frame(maxHeight: 460)
 
             Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
             footer
         }
-        .onAppear {
-            preset = settings.defaultPreset
-            playlistMode = settings.defaultPlaylistMode
-        }
-    }
-
-    // MARK: - 입력
-
-    private var inputSection: some View {
-        VStack(spacing: Theme.s2) {
-            HStack(spacing: Theme.s2) {
-                Image(systemName: "link")
-                    .font(.system(size: 11))
-                    .foregroundStyle(fieldFocused ? Theme.accent : .secondary)
-                TextField("링크 붙여넣기", text: $urlText)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 12.5))
-                    .focused($fieldFocused)
-                    .onSubmit { addFromInput() }
-                if !urlText.isEmpty {
-                    Button { urlText = "" } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.tertiary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, Theme.s3)
-            .padding(.vertical, 9)
-            .background(Theme.fieldFill, in: RoundedRectangle(cornerRadius: Theme.rField, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.rField, style: .continuous)
-                    .strokeBorder(fieldFocused ? Theme.accent.opacity(0.5) : Color.clear, lineWidth: 1)
-            )
-            .animation(Theme.motion(reduceMotion), value: fieldFocused)
-
-            HStack(spacing: Theme.s2) {
-                Picker("프리셋", selection: $preset) {
-                    ForEach(Preset.allCases) { p in
-                        Label(p.shortTitle, systemImage: p.symbol).tag(p)
-                    }
-                }
-                .labelsHidden()
-                .pickerStyle(.menu)
-                .controlSize(.small)
-                .fixedSize()
-                .help("저장 품질 프리셋")
-
-                Picker("플레이리스트", selection: $playlistMode) {
-                    ForEach(PlaylistMode.allCases) { m in
-                        Label(m.shortTitle, systemImage: m.symbol).tag(m)
-                    }
-                }
-                .labelsHidden()
-                .pickerStyle(.menu)
-                .controlSize(.small)
-                .fixedSize()
-                .help(playlistMode == .all
-                      ? "전체 플레이리스트를 항목별로 받습니다"
-                      : "이 영상 1개만 받습니다")
-
-                Spacer()
-
-                if expanding {
-                    ProgressView().controlSize(.small)
-                } else {
-                    Button {
-                        addFromInput()
-                    } label: {
-                        Label(justAdded ? "\(addedCount)개 추가됨" : "추가",
-                              systemImage: justAdded ? "checkmark" : "arrow.down")
-                            .frame(minWidth: 64)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(justAdded ? .green : Theme.accent)
-                    .controlSize(.small)
-                    .disabled(!canAdd)
-                    .keyboardShortcut(.defaultAction)
-                    .animation(Theme.motion(reduceMotion), value: justAdded)
-                }
-            }
-        }
-        .padding(Theme.s3)
+        .contentShape(Rectangle())
+        .onTapGesture { pasteFromClipboard() }   // 어디를 누르든 클립보드 링크 추가
     }
 
     // MARK: - 클립보드 배너 (일반 / 중복 분기)
@@ -184,10 +85,15 @@ struct MenuBarView: View {
         )
     }
 
-    // MARK: - 큐 리스트
+    // MARK: - 큐 리스트 (활성 항목만 — 메뉴바는 상태 요약이 목적)
+
+    /// 진행 중인 항목만 표시. 완료·실패는 메인 윈도우에서 관리.
+    private var activeTasks: [DownloadTask] {
+        store.tasks.filter { $0.state.isActive }
+    }
 
     @ViewBuilder private var queueList: some View {
-        if store.tasks.isEmpty {
+        if activeTasks.isEmpty {
             VStack(spacing: Theme.s1) {
                 Text("받은 항목이 여기에 표시됩니다")
                     .font(.system(size: 11))
@@ -197,7 +103,7 @@ struct MenuBarView: View {
             .padding(.vertical, Theme.s4)
         } else {
             VStack(spacing: 0) {
-                ForEach(Array(store.tasks.enumerated()), id: \.element.id) { index, task in
+                ForEach(Array(activeTasks.enumerated()), id: \.element.id) { index, task in
                     if index > 0 {
                         Rectangle().fill(Theme.hairlineColor)
                             .frame(height: Theme.hairline)
@@ -213,12 +119,14 @@ struct MenuBarView: View {
 
     private var footer: some View {
         HStack(spacing: Theme.s3) {
+            // 완료 요약 — 누르면 메인 윈도우를 연다. 완료 목록은 거기서 본다.
             Button { openMainWindow() } label: {
-                Label("전체 보기", systemImage: "square.grid.2x2")
+                Label("완료 \(store.completedCount)개", systemImage: "checkmark.circle")
             }
             .buttonStyle(.plain)
             .font(.system(size: 11))
             .foregroundStyle(.secondary)
+            .help("메인 윈도우 열기")
 
             Spacer()
 
@@ -255,62 +163,21 @@ struct MenuBarView: View {
 
     // MARK: - 동작
 
-    /// 입력 문자열에서 감지된 URL 목록 (여러 개 가능).
-    private var detectedURLs: [String] {
-        ClipboardMonitor.extractMediaURLs(from: urlText)
-    }
-
-    /// 입력에서 채널 링크 감지 — 큰 채널은 받을 전에 영상 수를 먼저 보여줘야 함.
-    private var detectedChannel: MediaLink? {
-        for raw in detectedURLs {
-            if let link = MediaLink(raw), link.kind == .channel { return link }
+    /// 아무 곳이나 누르면 클립보드 링크를 큐에 추가. 링크가 없으면 비프음.
+    /// 프리셋·플레이리스트 모드는 설정(기본값)을 따른다 — 여기서는 고르지 않는다.
+    private func pasteFromClipboard() {
+        if let task = store.addFromPasteboard() {
+            clipboard.markHandled(task.url)
+        } else {
+            NSSound.beep()
         }
-        return nil
     }
 
-    private var canAdd: Bool { !detectedURLs.isEmpty }
-
-    private func addFromInput() {
-        let urls = detectedURLs
-        guard !urls.isEmpty else { return }
-        add(urls: urls)
-    }
-
-    /// 단일 링크 추가 (클립보드 배너).
+    /// 클립보드 배너의 "추가" 버튼.
     private func add(url raw: String) {
         guard let url = ClipboardMonitor.extractMediaURL(from: raw) else { return }
-        add(urls: [url])
-    }
-
-    /// 여러 링크 추가 — 플레이리스트 모드면 첫 링크만 확장, 나머지는 단일 추가.
-    private func add(urls: [String]) {
-        clipboard.markHandled(urls.first ?? "")
-        if playlistMode == .all, let first = urls.first {
-            expanding = true
-            Task { @MainActor in
-                store.add(url: first, preset: preset, playlistMode: .all)
-                if urls.count > 1 {
-                    store.addMany(urls: Array(urls.dropFirst()), preset: preset, playlistMode: .single)
-                }
-                expanding = false
-                addedCount = urls.count
-                flashAdded()
-            }
-        } else {
-            let n = store.addMany(urls: urls, preset: preset, playlistMode: .single)
-            addedCount = n
-            flashAdded()
-        }
-        urlText = ""
-        fieldFocused = false
-    }
-
-    private func flashAdded() {
-        justAdded = true
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.2))
-            justAdded = false
-        }
+        clipboard.markHandled(url)
+        store.add(url: url)
     }
 
     private func openMainWindow() {

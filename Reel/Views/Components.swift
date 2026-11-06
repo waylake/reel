@@ -60,14 +60,10 @@ struct Thumbnail: View {
 struct StateChip: View {
     let state: DownloadState
     var body: some View {
-        HStack(spacing: Theme.s1) {
-            StateDot(state: state)
-            Text(state.label)
-                .font(.system(size: 10, weight: .semibold))
-        }
-        .padding(.horizontal, 7).padding(.vertical, 3)
-        .foregroundStyle(state.tint)
-        .background(state.tint.opacity(0.13), in: Capsule())
-        .accessibilityLabel("상태: \(state.label)")
+        Label(state.label, systemImage: state.symbol)
+            .font(.caption)
+            .labelStyle(.titleAndIcon)
+            .foregroundStyle(state.tint)
+            .accessibilityLabel("상태: \(state.label)")
     }
 }

@@ -2,8 +2,8 @@ import Foundation
 
 /// 붙여넣기/드롭된 미디어 URL을 종류로 분류한다.
 ///
-/// 채널·플레이리스트·단일 영상을 구분해 미리보기(채널 이름 + 영상 수)를
-/// 정하는 데 사용한다. 네트워크 없이 URL 형태만으로 판별한다(빠름).
+/// 채널 링크는 큐에 추가할 때 플레이리스트처럼 항목을 펼치는 데 사용한다.
+/// 네트워크 없이 URL 형태만으로 판별한다(빠름).
 enum MediaLinkKind: Sendable {
     case single      // 단일 영상 (watch?v=, youtu.be/ID)
     case playlist     // 플레이리스트 (?list=)
@@ -29,45 +29,6 @@ struct MediaLink: Sendable {
         self.raw = text
         self.host = host
         self.kind = Self.classify(host: host, path: u.path, query: u.query ?? "")
-    }
-
-    /// 채널 핸들 (`@원빅월드쇼` → `원빅월드쇼`). 없으면 nil.
-    var channelHandle: String? {
-        guard kind == .channel, let u = URL(string: raw) else { return nil }
-        let p = u.path   // URL.path는 비옵셔널 String
-        guard !p.isEmpty else { return nil }
-        // /@핸들 → 핸들 (percent-decode)
-        let trimmed = p.hasPrefix("/") ? String(p.dropFirst()) : p
-        if trimmed.hasPrefix("@") {
-            let handle = String(trimmed.dropFirst())
-            // /videos 같은 하위 경로 제거
-            let base = handle.split(separator: "/").first.map(String.init) ?? handle
-            return base.removingPercentEncoding ?? base
-        }
-        return nil
-    }
-
-    /// 플레이리스트 ID (`?list=PL…` → `PL…`). 없으면 nil.
-    var playlistID: String? {
-        guard kind == .playlist,
-              let u = URL(string: raw),
-              let items = URLComponents(url: u, resolvingAgainstBaseURL: false)?.queryItems else { return nil }
-        return items.first(where: { $0.name == "list" })?.value
-    }
-
-    /// 플레이리스트/채널인지 여부.
-    var isCollection: Bool {
-        kind == .playlist || kind == .channel
-    }
-
-    /// 미리보기용 라벨 — 채널이면 핸들, 플레이리스트면 "플레이리스트", 그 외 "영상".
-    var previewKindLabel: String {
-        switch kind {
-        case .channel: "채널"
-        case .playlist: "플레이리스트"
-        case .single: "영상"
-        case .other: "링크"
-        }
     }
 
     private static func classify(host: String, path: String, query: String) -> MediaLinkKind {

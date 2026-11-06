@@ -2,47 +2,6 @@ import AppKit
 import Observation
 import UserNotifications
 
-/// 사이드바 필터.
-enum QueueFilter: String, CaseIterable, Identifiable {
-    case inProgress, queued, completed, failed, all, audio, stats
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .inProgress: "진행 중"
-        case .queued: "대기"
-        case .completed: "완료"
-        case .failed: "실패"
-        case .all: "전체 항목"
-        case .audio: "오디오"
-        case .stats: "통계"
-        }
-    }
-    var symbol: String {
-        switch self {
-        case .inProgress: "arrow.down.circle"
-        case .queued: "clock"
-        case .completed: "checkmark.circle"
-        case .failed: "exclamationmark.triangle"
-        case .all: "square.grid.2x2"
-        case .audio: "music.note"
-        case .stats: "chart.bar.xaxis"
-        }
-    }
-    @MainActor
-    func matches(_ task: DownloadTask) -> Bool {
-        switch self {
-        case .inProgress: task.state.isActive || task.state == .paused
-        case .queued: task.state == .queued
-        case .completed: task.state == .completed
-        case .failed: task.state == .failed || task.state == .cancelled
-        case .all: true
-        case .audio: task.options.preset.isAudioOnly
-        case .stats: false   // 통계는 항목 매칭 없음 — 별도 화면
-        }
-    }
-}
-
 /// 큐의 단일 진실 공급원. 동시성 스케줄링 + 영속화 + 엔진 이벤트 소비를 담당.
 @MainActor
 @Observable
@@ -112,14 +71,6 @@ final class QueueStore {
             n += 1
         }
         return n
-    }
-
-    /// 클립보드/입력 문자열에서 URL들을 꺼내 큐에 추가. 추가된 항목 수 반환.
-    @discardableResult
-    func addManyFromText(_ text: String, preset: Preset? = nil, playlistMode: PlaylistMode? = nil) -> Int {
-        let urls = ClipboardMonitor.extractMediaURLs(from: text)
-        guard !urls.isEmpty else { return 0 }
-        return addMany(urls: urls, preset: preset, playlistMode: playlistMode)
     }
 
     func cancel(_ task: DownloadTask) {
@@ -223,18 +174,9 @@ final class QueueStore {
 
     // MARK: - 파생
 
-    func filtered(_ filter: QueueFilter) -> [DownloadTask] {
-        tasks.filter { filter.matches($0) }
-    }
-    func count(_ filter: QueueFilter) -> Int {
-        tasks.reduce(0) { $0 + (filter.matches($1) ? 1 : 0) }
-    }
     var activeCount: Int { tasks.reduce(0) { $0 + ($1.state.isActive ? 1 : 0) } }
     var queuedCount: Int { tasks.reduce(0) { $0 + ($1.state == .queued ? 1 : 0) } }
-    var completedToday: Int {
-        tasks.reduce(0) { $0 + ($1.state == .completed && Calendar.current.isDateInToday($1.createdAt) ? 1 : 0) }
-    }
-    var recent: [DownloadTask] { Array(tasks.prefix(6)) }
+    var completedCount: Int { tasks.reduce(0) { $0 + ($1.state == .completed ? 1 : 0) } }
 
     /// 메뉴바/상태바용 전체 진행률 — 활성 항목들의 평균 (인코딩은 0.95로 간주).
     var overallProgress: Double {
@@ -242,29 +184,6 @@ final class QueueStore {
         guard !active.isEmpty else { return 0 }
         let sum = active.reduce(0.0) { $0 + ($1.state == .encoding ? 0.95 : $1.progress) }
         return sum / Double(active.count)
-    }
-
-    // MARK: - 통계
-
-    /// 다운로드 통계 요약. 완료 항목 기준.
-    var stats: DownloadStats {
-        let completed = tasks.filter { $0.state == .completed }
-        let totalBytes = completed.reduce(Int64(0)) { $0 + ($1.totalBytes ?? Int64($1.downloadedBytes)) }
-        let thisMonth = completed.filter { Calendar.current.isDate($0.completedAt ?? $0.createdAt, equalTo: Date(), toGranularity: .month) }.count
-        let byHost: [String: Int] = completed.reduce(into: [:]) { acc, t in
-            guard let h = t.host else { return }
-            acc[h, default: 0] += 1
-        }
-        let byPreset: [Preset: Int] = completed.reduce(into: [:]) { acc, t in
-            acc[t.options.preset, default: 0] += 1
-        }
-        return DownloadStats(
-            completedCount: completed.count,
-            thisMonthCount: thisMonth,
-            totalBytes: totalBytes,
-            byHost: byHost,
-            byPreset: byPreset
-        )
     }
 
     // MARK: - 스케줄러
@@ -348,6 +267,16 @@ final class QueueStore {
 
     /// 실패 처리 — 일시적 오류면 지수 백오프로 자동 재시도, 아니면 실패 종료.
     private func handleFailure(_ message: String, for task: DownloadTask) {
+        // 브라우저 쿠키 DB를 못 찾으면(브라우저 미설치·프로필 불일치) 쿠키 설정을 끄고
+        // 쿠키 없이 바로 다시 받는다. 설정도 함께 꺼서 다음 다운로드부터 같은 실패를 피한다.
+        if Self.isCookieDatabaseError(message), task.options.cookiesFromBrowser != nil {
+            task.options.cookiesFromBrowser = nil
+            settings.cookiesFromBrowser = ""
+            settings.persist()
+            task.state = .queued   // 종료 직후 소비 루프가 pump()를 돌려 다시 시작한다.
+            task.errorMessage = nil
+            return
+        }
         let canRetry = task.retryCount < DownloadTask.maxRetries && Self.isRetryableError(message)
         guard canRetry else {
             task.state = .failed
@@ -413,6 +342,11 @@ final class QueueStore {
                          "private video", "members-only", "not available"]
         if permanent.contains(where: { m.contains($0) }) { return false }
         return keywords.contains(where: { m.contains($0) })
+    }
+
+    /// 브라우저 쿠키 DB를 찾지 못한 오류 판별.
+    static func isCookieDatabaseError(_ message: String) -> Bool {
+        message.lowercased().contains("cookies database")
     }
 
     /// 유튜브 봇 감지 계열 판별 — yt-dlp 자동 업데이트의 트리거. (#11)
@@ -579,22 +513,5 @@ final class QueueStore {
             return date < cutoff
         }
         if tasks.count != before { save() }
-    }
-}
-
-/// 통계 요약 모델.
-struct DownloadStats: Sendable {
-    var completedCount: Int
-    var thisMonthCount: Int
-    var totalBytes: Int64
-    var byHost: [String: Int]
-    var byPreset: [Preset: Int]
-
-    /// 상위 N개 사이트 (다운로드 수 내림차순).
-    func topHosts(_ n: Int = 5) -> [(host: String, count: Int)] {
-        byHost.sorted { $0.value > $1.value }.prefix(n).map { ($0.key, $0.value) }
-    }
-    func topPresets() -> [(preset: Preset, count: Int)] {
-        byPreset.sorted { $0.value > $1.value }.map { ($0.key, $0.value) }
     }
 }

@@ -14,8 +14,6 @@ struct SettingsView: View {
                 .tabItem { Label("포맷", systemImage: "slider.horizontal.3") }
             engineTab
                 .tabItem { Label("엔진", systemImage: "wrench.and.screwdriver") }
-            SupportedSitesView()
-                .tabItem { Label("지원 사이트", systemImage: "globe") }
         }
         .frame(width: 520, height: 500)
     }
@@ -126,6 +124,7 @@ struct SettingsView: View {
     @State private var updating = false
     @State private var updateMessage: String?
     @State private var updateOk = false
+    @State private var showSites = false
 
     private var engineTab: some View {
         Form {
@@ -177,6 +176,14 @@ struct SettingsView: View {
             }
 
             Section {
+                Button("지원 사이트 목록 보기…") { showSites = true }
+            } footer: {
+                Text("yt-dlp가 지원하는 사이트 전체 목록입니다. 항상 설치된 버전 기준입니다.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
                 LabeledContent("ffmpeg") {
                     if BinaryResolver.ffmpeg != nil {
                         Label("감지됨", systemImage: "checkmark.circle.fill")
@@ -198,6 +205,10 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .task { if ytdlpVersion == nil { refreshVersion() } }
+        .sheet(isPresented: $showSites) {
+            SupportedSitesView()
+                .frame(minWidth: 480, minHeight: 420)
+        }
     }
 
     private func refreshVersion() {

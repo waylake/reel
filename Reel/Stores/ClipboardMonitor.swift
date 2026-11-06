@@ -33,11 +33,6 @@ final class ClipboardMonitor {
         timer = t
     }
 
-    func stop() {
-        timer?.invalidate()
-        timer = nil
-    }
-
     private func checkPasteboard(force: Bool) {
         let pb = NSPasteboard.general
         guard force || pb.changeCount != lastChangeCount else { return }

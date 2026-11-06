@@ -19,8 +19,6 @@ enum Theme {
     static let s3: CGFloat = 12
     /// 16 — 섹션 사이·컨테이너 패딩
     static let s4: CGFloat = 16
-    /// 20 — 큰 구획
-    static let s5: CGFloat = 20
 
     // MARK: - 반경
 
@@ -37,10 +35,6 @@ enum Theme {
     static let hairline: CGFloat = 0.5
     /// 헤어라인 색 — 라이트/다크 자동
     static var hairlineColor: Color { Color.primary.opacity(0.08) }
-    /// 행 카드 테두리
-    static var rowBorder: Color { Color.primary.opacity(0.07) }
-    /// 행 카드 바탕(휴지 상태)
-    static var rowFill: Color { Color.primary.opacity(0.035) }
     /// 행 카드 바탕(호버)
     static var rowFillHover: Color { Color.primary.opacity(0.065) }
     /// 입력 필드 바탕
@@ -49,7 +43,7 @@ enum Theme {
     // MARK: - 색
 
     /// 브랜드 액센트 — 앱 전체에서 단 하나.
-    static let accent: Color = .teal
+    static var accent: Color { .accentColor }
 
     // MARK: - 모션
 
@@ -68,24 +62,11 @@ enum Theme {
     static let rowTitle: Font = .system(size: 13, weight: .medium)
     /// 행 메타(숫자 포함 — 반드시 monospacedDigit와 함께)
     static let rowMeta: Font = .system(size: 11)
-    /// 섹션 라벨 (uppercase 트래킹은 SectionLabel이 처리)
-    static let sectionLabel: Font = .system(size: 10.5, weight: .semibold)
     /// 퍼센트 강조 숫자
     static let percent: Font = .system(size: 13, weight: .bold)
 }
 
 // MARK: - 공용 마이크로 컴포넌트
-
-/// 섹션 라벨 — 소문자 금지, 자간으로 호흡.
-struct SectionLabel: View {
-    let text: String
-    var body: some View {
-        Text(text)
-            .font(Theme.sectionLabel)
-            .kerning(0.6)
-            .foregroundStyle(.secondary)
-    }
-}
 
 /// 3pt 두께 커스텀 진행바 — 시스템 ProgressView보다 조용하고 정밀.
 struct ThinProgressBar: View {
@@ -148,16 +129,5 @@ struct QuickIconButton: View {
         .onHover { hovering = $0 }
         .help(help)
         .accessibilityLabel(help)
-    }
-}
-
-/// 상태 점 — 색 + 형태(채움/테두리)로 이중 인코딩.
-struct StateDot: View {
-    let state: DownloadState
-    var body: some View {
-        Circle()
-            .fill(state.tint)
-            .frame(width: 5, height: 5)
-            .opacity(state == .queued || state == .paused ? 0.45 : 1)
     }
 }
