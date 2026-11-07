@@ -4,7 +4,7 @@
 
 # Reel
 
-**Copy a link. Click once. It downloads.**
+**Copy a link. Press ⌘V. It downloads.**
 
 A tiny, native macOS menu bar downloader for YouTube and 1,800+ other sites,<br>
 powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org).
@@ -28,7 +28,7 @@ powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpe
 Most downloaders make you paste a URL into a text field, pick a format, then press a button. Reel skips all of that:
 
 1. Copy a video link in your browser (<kbd>⌘</kbd> <kbd>C</kbd>).
-2. Click anywhere in Reel, or press <kbd>⌘</kbd> <kbd>V</kbd>.
+2. Switch to Reel and press <kbd>⌘</kbd> <kbd>V</kbd>, or drag the link onto the window.
 3. That's it. Reel uses your default format and saves the file to your folder.
 
 No input fields, no format dialogs, no accounts, no tracking.
@@ -37,7 +37,7 @@ No input fields, no format dialogs, no accounts, no tracking.
 
 |  |  |
 | --- | --- |
-| 📋 **Clipboard-first** | Reel notices media links you copy. Click the window or menu bar popover to add them, or drag links (or a `.txt` list) onto the window. |
+| 📋 **Clipboard-first** | Reel notices media links you copy. Press <kbd>⌘</kbd> <kbd>V</kbd> in Reel to add one, or drag links (or a `.txt` list) onto the window. |
 | 🖼️ **Thumbnail cards** | Every download is a card with its thumbnail, live progress, speed and time remaining. Hover over a card for quick actions. |
 | 🎚️ **Presets** | Best quality MP4, 1080p (H.264 for compatibility), MP3, M4A, or the original file as-is. |
 | 📚 **Playlists & channels** | Download a single video or a whole playlist, with a configurable item limit. |
@@ -93,7 +93,7 @@ Release builds include `yt-dlp` and `ffmpeg`, so you don't need anything else. R
 
 | Action | How |
 | --- | --- |
-| Add the copied link | Click anywhere in the window or popover, or press <kbd>⌘</kbd> <kbd>V</kbd> |
+| Add the copied link | Press <kbd>⌘</kbd> <kbd>V</kbd> in the window or popover, or click **Add** on the clipboard banner in the menu bar |
 | Add several links | Drag links or a `.txt` file (one URL per line) onto the window |
 | Pause, resume, cancel, open, reveal | Hover over a card, or right-click it |
 | Open a finished file | Double-click its card |
