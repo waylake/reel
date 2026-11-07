@@ -66,9 +66,7 @@ struct DownloadCardView: View {
                 .strokeBorder(Theme.hairlineColor, lineWidth: Theme.hairline)
         )
         .contentShape(RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous))
-        // 카드 클릭이 창의 "클릭하면 클립보드 링크 추가"로 새지 않게 여기서 소비한다.
         .onTapGesture(count: 2) { if task.state == .completed { store.openFile(task) } }
-        .onTapGesture {}
         .onHover { hovering = $0 }
         .animation(Theme.motion(reduceMotion), value: hovering)
         .contextMenu { contextItems }

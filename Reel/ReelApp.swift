@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let clipboard = ClipboardMonitor()
     let updater = UpdaterStore()
     private var mainWindow: NSWindow?
+    private var pasteMonitor: Any?
 
     override init() {
         store = QueueStore(settings: settings)
@@ -24,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // UI 테스트 중에는 부작용(활성화·윈도우 강제 오픈)을 줄여
         // XCUITest 러너 부트스트랩과 경합하지 않게 한다. (#12)
         if ProcessInfo.processInfo.arguments.contains("UITESTING") { return }
+        installPasteShortcut()
         // 시작은 regular: Dock + Cmd+Tab에 표시.
         NSApp.setActivationPolicy(.regular)
         // 메인 GUI 윈도우를 즉시 띄운다 — 메뉴바만 나오는 문제 해결의 핵심.
@@ -51,6 +53,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             showMainWindow()
         }
         return true
+    }
+
+    // MARK: - ⌘V
+
+    /// ⌘V → 클립보드 링크 다운로드.
+    ///
+    /// 메뉴의 단축키(.keyboardShortcut)로는 동작하지 않았다: 기본 "편집 > 붙여넣기"가 같은 ⌘V를
+    /// 먼저 가져가는데, 메인 창에는 paste:를 받을 응답자가 없어 아무 일도 일어나지 않았다.
+    /// 로컬 키 모니터는 메뉴 단축키 처리보다 먼저 호출되므로 여기서 가로챈다.
+    /// - 텍스트 입력 중(설정의 자막 언어 등)이면 일반 붙여넣기로 양보
+    /// - 한글 등 비라틴 입력 소스에서도 동작하도록 물리 키(V = keyCode 9)로도 판별
+    private func installPasteShortcut() {
+        pasteMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self else { return event }
+            let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            let isV = event.keyCode == 9 || event.charactersIgnoringModifiers?.lowercased() == "v"
+            guard flags == .command, isV else { return event }
+            if NSApp.keyWindow?.firstResponder is NSTextView { return event }
+            self.pasteFromClipboard()
+            return nil
+        }
+    }
+
+    /// 클립보드 링크를 큐에 추가. 링크가 없으면 비프음.
+    /// 프리셋·플레이리스트 모드는 설정(기본값)을 따른다.
+    func pasteFromClipboard() {
+        if let task = store.addFromPasteboard() {
+            clipboard.markHandled(task.url)
+        } else {
+            NSSound.beep()
+        }
     }
 
     /// 메인 GUI 윈도우 표시 — 이미 있으면 앞으로/복원, 없으면 새로 생성.
@@ -165,16 +198,8 @@ struct ReelApp: App {
         }
     }
 
-    /// ⌘V 처리: 텍스트 입력 중이면 일반 붙여넣기로 양보, 아니면 클립보드 URL을 바로 다운로드.
+    /// 메뉴 "붙여넣어 바로 다운로드" 클릭. (⌘V 키 입력은 AppDelegate의 키 모니터가 처리)
     private func pasteAndDownload() {
-        if let responder = NSApp.keyWindow?.firstResponder, responder is NSTextView {
-            NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil)
-            return
-        }
-        if appDelegate.store.addFromPasteboard() != nil {
-            NSApplication.shared.activate(ignoringOtherApps: true)
-        } else {
-            NSSound.beep()   // 클립보드에 유효한 링크가 없음
-        }
+        appDelegate.pasteFromClipboard()
     }
 }

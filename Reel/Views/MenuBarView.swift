@@ -3,7 +3,7 @@ import SwiftUI
 /// 화면 A — 메뉴바 팝오버.
 ///
 /// 입력창 없이 클립보드로 동작한다:
-/// - 팝오버 어디를 누르면 클립보드 링크가 큐에 추가된다 (⌘V와 동일)
+/// - ⌘V 또는 클립보드 배너의 "추가" 버튼으로 링크를 큐에 추가한다 (클릭만으로는 추가하지 않음)
 /// 1. (있을 때만) 클립보드 감지 배너 / yt-dlp 미설치 배너
 /// 2. 썸네일 카드 — 진행 중 항목 + 최근 완료 3개
 /// 3. 푸터 — 완료 요약 · 저장 위치 · 설정 · 종료
@@ -43,8 +43,6 @@ struct MenuBarView: View {
             Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
             footer
         }
-        .contentShape(Rectangle())
-        .onTapGesture { pasteFromClipboard() }   // 어디를 누르든 클립보드 링크 추가
     }
 
     // MARK: - 클립보드 배너 (일반 / 중복 분기)
@@ -113,7 +111,7 @@ struct MenuBarView: View {
                 Image(systemName: "arrow.down.circle.dotted")
                     .font(.system(size: 28, weight: .light))
                     .foregroundStyle(.tertiary)
-                Text("링크를 복사한 뒤 여기를 누르세요")
+                Text("링크를 복사한 뒤 ⌘V를 누르세요")
                     .font(.system(size: 11.5))
                     .foregroundStyle(.secondary)
             }
@@ -186,16 +184,6 @@ struct MenuBarView: View {
 
     // MARK: - 동작
 
-    /// 아무 곳이나 누르면 클립보드 링크를 큐에 추가. 링크가 없으면 비프음.
-    /// 프리셋·플레이리스트 모드는 설정(기본값)을 따른다 — 여기서는 고르지 않는다.
-    private func pasteFromClipboard() {
-        if let task = store.addFromPasteboard() {
-            clipboard.markHandled(task.url)
-        } else {
-            NSSound.beep()
-        }
-    }
-
     /// 클립보드 배너의 "추가" 버튼.
     private func add(url raw: String) {
         guard let url = ClipboardMonitor.extractMediaURL(from: raw) else { return }
@@ -251,7 +239,6 @@ private struct SetupBanner: View {
 // MARK: - 미니 카드 (메인 윈도우 카드의 가로형 축소판)
 
 /// 썸네일(16:9) + 제목 2줄 + 진행바/메타. 호버하면 썸네일 위에 빠른 동작이 뜬다.
-/// 카드 클릭은 팝오버의 "클릭하면 클립보드 링크 추가"로 새지 않게 여기서 소비한다.
 private struct MiniCard: View {
     @Environment(QueueStore.self) private var store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

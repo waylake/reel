@@ -3,8 +3,9 @@ import SwiftUI
 /// 화면 B — 메인 윈도우. 항목 카드 그리드가 전부다.
 ///
 /// 입력창 없이 클립보드로 동작한다:
-/// - 창 어디를 누르면 클립보드 링크가 큐에 추가된다 (⌘V와 동일)
+/// - ⌘V로 클립보드 링크를 큐에 추가한다 (AppDelegate의 키 모니터가 처리)
 /// - 링크를 창으로 드래그해도 추가된다
+/// - 클릭만으로는 추가하지 않는다 — 실수로 다운로드가 시작되던 문제 (v1.3.2)
 /// - 툴바: (완료 항목이 있을 때) 완료 지우기
 ///
 /// 배경은 항목 유무와 관계없이 항상 창 뒤가 비치는 반투명(VisualEffectBackground)이다.
@@ -16,8 +17,6 @@ struct MainWindowView: View {
     var body: some View {
         content
             .frame(minWidth: 720, maxWidth: .infinity, minHeight: 440, maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .onTapGesture { pasteFromClipboard() }
             .toolbar { toolbarContent }
             .background(VisualEffectBackground().ignoresSafeArea())
             .dropDestination(for: URL.self) { urls, _ in
@@ -52,7 +51,7 @@ struct MainWindowView: View {
             ContentUnavailableView {
                 Label("받은 항목이 없어요", systemImage: "arrow.down.circle.dotted")
             } description: {
-                Text("아무 곳이나 클릭하면 클립보드의 링크를 받아요.\n링크를 이 창으로 드래그해도 됩니다.")
+                Text("링크를 복사한 뒤 ⌘V를 누르면 받아요.\n링크를 이 창으로 드래그해도 됩니다.")
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
@@ -69,14 +68,6 @@ struct MainWindowView: View {
     }
 
     // MARK: - 동작
-
-    /// 클립보드 링크를 큐에 추가. 링크가 없으면 비프음.
-    /// 프리셋·플레이리스트 모드는 설정(기본값)을 따른다.
-    private func pasteFromClipboard() {
-        if store.addFromPasteboard() == nil {
-            NSSound.beep()
-        }
-    }
 
     /// 드롭 — http URL 직접 드래그 또는 .txt 파일(줄 단위 URL) 처리.
     private func handleDrop(_ urls: [URL]) -> Bool {
