@@ -12,7 +12,10 @@ Project generated via `xcodegen` from `project.yml` (no SPM).
 Reel/
 ├── ReelApp.swift          # @main entry point (MenuBarExtra + WindowGroup + Settings)
 ├── Views/                 # SwiftUI views
-│   └── StatisticsView.swift   # 다운로드 통계 뷰
+│   ├── MainWindowView.swift   # 메인 윈도우 — 썸네일 카드 그리드 (반투명 배경)
+│   ├── DownloadCardView.swift # 큐 항목 카드
+│   ├── MenuBarView.swift      # 메뉴바 팝오버 — 진행 중 + 최근 완료 미니 카드
+│   └── SettingsView.swift     # 일반 / 다운로드 / 고급 탭
 ├── Stores/
 │   ├── QueueStore.swift   # @Observable, single source of truth for download queue + persistence
 │   ├── AppSettings.swift  # UserDefaults-backed settings
@@ -31,7 +34,8 @@ Reel/
 │   └── Preset.swift           # bestMP4 / 1080p / mp3 / m4a / raw
 └── Support/
     ├── Formatting.swift       # Fmt helpers (duration, bytes, resolution)
-    └── Theme.swift
+    ├── Theme.swift
+    └── VisualEffectBackground.swift  # NSVisualEffectView 브리지 (창 뒤 반투명)
 ```
 
 ### Concurrency
@@ -70,7 +74,13 @@ XcodeGen-managed project (no SPM). `ENABLE_HARDENED_RUNTIME` is on. Sandbox is o
 
 ## Testing
 
-No automated test target yet. Add one via `project.yml` with XCTest when needed.
+`ReelTests/` (XCTest + Swift Testing) — `xcodebuild test -project Reel.xcodeproj -scheme Reel -destination 'platform=macOS'`.
+Smoke test: `./scripts/smoke-test.sh`. CI: `.github/workflows/test.yml`.
+
+## Docs
+
+Public docs are in English: `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/`.
+README screenshots live in `docs/screenshots/`.
 
 ## Release & Auto-Update
 
@@ -82,6 +92,7 @@ Deployment is fully automated via GitHub Actions (`.github/workflows/release.yml
 3. The `.zip` and `appcast.xml` are uploaded to GitHub Releases automatically.
 
 To build manually locally:
+
 ```bash
 ./scripts/build-release.sh   # Release build + bundles yt-dlp/ffmpeg into .app
 ./scripts/notarize.sh        # Apple notarization

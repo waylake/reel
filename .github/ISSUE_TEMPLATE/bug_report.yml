@@ -1,0 +1,64 @@
+name: Bug report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please search [existing issues](https://github.com/waylake/reel/issues) first.
+        Tip: many sudden download failures are fixed by **Settings → Advanced → yt-dlp → Update**.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug. Screenshots help a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Copy https://...
+        2. Click the Reel window
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Example URL
+      description: A public link that reproduces the problem, if it's download-related.
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message
+      description: Hover over the failed card to see the full yt-dlp error, then paste it here.
+      render: text
+  - type: input
+    id: reel-version
+    attributes:
+      label: Reel version
+      description: Reel → About Reel
+      placeholder: "1.2.0"
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version and chip
+      placeholder: "macOS 15.4, Apple Silicon"
+    validations:
+      required: true
+  - type: input
+    id: ytdlp-version
+    attributes:
+      label: yt-dlp version
+      description: Settings → Advanced → yt-dlp
+      placeholder: "2026.10.26"

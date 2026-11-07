@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Site-specific download failure
+    url: https://github.com/yt-dlp/yt-dlp/issues
+    about: If `yt-dlp <url>` also fails in Terminal, the issue is upstream in yt-dlp.
+  - name: Security vulnerability
+    url: https://github.com/waylake/reel/security/advisories/new
+    about: Please report security issues privately.

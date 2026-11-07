@@ -1,77 +1,170 @@
-# Reel — macOS YouTube Downloader
+<div align="center">
 
-클립보드 링크를 감지하는 메뉴바 다운로더. yt-dlp + ffmpeg 기반.
+<img src="icon-source/reel-icon-1024.png" width="128" alt="Reel app icon">
 
-## 기능
+# Reel
 
-- **클립보드 자동 감지** — 브라우저에서 링크를 복사하면 메뉴바가 인식한다. 수동 입력 불필요.
-- **동시 다운로드** — 최대 6개까지 병렬 처리. 저전력 프로필로 배터리 사용량을 줄일 수 있다.
-- **오디오 추출** — MP3, M4A 프리셋. 팟캐스트, 음악, 강의 영상 모두 지원.
-- **1,800개 이상 사이트 지원** — YouTube, Vimeo, TikTok, X, Instagram, Reddit 등 yt-dlp가 지원하는 모든 플랫폼.
-- **SponsorBlock** — 스폰서·자기홍보 구간을 자동으로 건너뛴다.
-- **자막 임베드** — 다국어 자막과 자동 생성 자막을 영상에 포함한다.
-- **진행률 표시** — 속도, 남은 시간, 파일 크기를 실시간으로 보여준다.
-- **큐 영속화** — 앱을 재시작해도 대기 중이던 항목을 그대로 복원한다.
-- **재생목록(Playlist) 지원** — 단일 영상뿐만 아니라 재생목록 전체를 한 번에 다운로드할 수 있다.
-- **앱 내 자체 엔진 업데이트** — 최신 사이트 변경에 대응하기 위해 앱 내에서 yt-dlp 버전을 확인하고 업데이트할 수 있다.
-- **다운로드 통계 및 자동 정리** — 다운로드 통계를 제공하고 설정한 기간이 지난 완료 항목을 자동으로 정리한다.
+**Copy a link. Click once. It downloads.**
 
-## 시스템 요구사항
+A tiny, native macOS menu bar downloader for YouTube and 1,800+ other sites,<br>
+powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org).
 
-- macOS 14 이상 (Sonoma)
-- Apple Silicon 또는 Intel (Rosetta 2)
+[![Latest release](https://img.shields.io/github/v/release/waylake/reel?label=release&color=14b8a6)](https://github.com/waylake/reel/releases/latest)
+[![Tests](https://img.shields.io/github/actions/workflow/status/waylake/reel/test.yml?branch=main&label=tests)](https://github.com/waylake/reel/actions/workflows/test.yml)
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)
+![Swift](https://img.shields.io/badge/Swift-5-F05138?logo=swift&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 
-## 설치
+[**Download**](https://github.com/waylake/reel/releases/latest) · [Features](#features) · [Install](#install) · [Build from source](#build-from-source) · [Contributing](CONTRIBUTING.md)
 
-Github Releases에서 최신 `Reel.app.zip`을 다운로드하거나 직접 소스에서 빌드할 수 있다.
+<br>
 
-1. 압축 해제 후 `Reel.app`을 Applications 폴더로 이동
-2. 실행 — 메뉴바에 ↓ 아이콘이 나타난다
+<img src="docs/screenshots/main-window.png" width="860" alt="Reel main window showing downloads as thumbnail cards">
 
-## 사용법
+</div>
 
-1. 브라우저에서 영상 링크 복사 (⌘C)
-2. 메뉴바 Reel 아이콘 클릭 — 감지된 링크가 자동으로 표시된다
-3. 추가 버튼을 누르거나 텍스트 필드에 직접 붙여넣기
-4. 완료 시 알림
+## Why Reel?
 
-## 프리셋
+Most downloaders make you paste a URL into a text field, pick a format, then press a button. Reel skips all of that:
 
-| 프리셋 | 설명 |
-|--------|------|
-| 최고 화질 (MP4) | 원본 최고 화질, 무손실 MP4 리먹싱 |
-| 1080p (호환성) | 1080p 제한, H.264 우선 |
-| 오디오 · MP3 | 오디오만 추출, MP3 인코딩 |
-| 오디오 · M4A | 오디오만 추출, AAC 원본 유지 |
-| 원본 그대로 | 포맷 변환 없음 |
+1. Copy a video link in your browser (<kbd>⌘</kbd> <kbd>C</kbd>).
+2. Click anywhere in Reel, or press <kbd>⌘</kbd> <kbd>V</kbd>.
+3. That's it. Reel uses your default format and saves the file to your folder.
 
-## 개발
+No input fields, no format dialogs, no accounts, no tracking.
+
+## Features
+
+|  |  |
+| --- | --- |
+| 📋 **Clipboard-first** | Reel notices media links you copy. Click the window or menu bar popover to add them, or drag links (or a `.txt` list) onto the window. |
+| 🖼️ **Thumbnail cards** | Every download is a card with its thumbnail, live progress, speed and time remaining. Hover over a card for quick actions. |
+| 🎚️ **Presets** | Best quality MP4, 1080p (H.264 for compatibility), MP3, M4A, or the original file as-is. |
+| 📚 **Playlists & channels** | Download a single video or a whole playlist, with a configurable item limit. |
+| ⚡ **Parallel downloads** | Up to 6 downloads at once. Low power mode limits concurrency and bandwidth. |
+| 🧩 **Rich files** | Embed subtitles (including auto-generated), chapters, metadata and thumbnails. Strip sponsor segments with SponsorBlock. |
+| 🔁 **Resilient** | Retries transient YouTube errors with backoff and can update yt-dlp in place, with no app restart. Download cookies from Safari, Chrome or Firefox for videos that need a login. |
+| 💾 **Persistent queue** | Quit at any time. Unfinished items resume on next launch. |
+| 🔄 **Auto-updates** | Signed in-app updates via [Sparkle](https://sparkle-project.org). |
+| 🔒 **Private** | Everything stays on your Mac. No analytics, no telemetry. See [PRIVACY.md](PRIVACY.md). |
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="42%" align="center" valign="top">
+      <img src="docs/screenshots/menu-bar.png" alt="Menu bar popover with active and recent downloads"><br>
+      <sub><b>Menu bar</b>: active downloads and your latest files, one click away</sub>
+    </td>
+    <td width="58%" align="center" valign="top">
+      <img src="docs/screenshots/settings-general.png" alt="Settings: General"><br>
+      <sub><b>Settings</b>: just the essentials up front</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="docs/screenshots/settings-downloads.png" alt="Settings: Downloads"><br>
+      <sub>Playlists, subtitles, embeds and SponsorBlock</sub>
+    </td>
+    <td align="center" valign="top">
+      <img src="docs/screenshots/settings-advanced.png" alt="Settings: Advanced"><br>
+      <sub>Concurrency, cleanup and the yt-dlp / ffmpeg engine</sub>
+    </td>
+  </tr>
+</table>
+
+<sub>Screenshots show <a href="https://studio.blender.org/films/">Blender open movies</a> (CC BY). The app UI is currently in Korean.</sub>
+
+## Install
+
+**Requirements:** macOS 14 Sonoma or later, on Apple Silicon or Intel.
+
+1. Download `Reel.app.zip` from the [latest release](https://github.com/waylake/reel/releases/latest).
+2. Unzip it and move `Reel.app` to `/Applications`.
+3. The release build is ad-hoc signed (not notarized). The first time you launch it, **right-click → Open**, or run:
+
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/Reel.app
+   ```
+
+Release builds include `yt-dlp` and `ffmpeg`, so you don't need anything else. Reel checks for updates automatically.
+
+## Usage
+
+| Action | How |
+| --- | --- |
+| Add the copied link | Click anywhere in the window or popover, or press <kbd>⌘</kbd> <kbd>V</kbd> |
+| Add several links | Drag links or a `.txt` file (one URL per line) onto the window |
+| Pause, resume, cancel, open, reveal | Hover over a card, or right-click it |
+| Open a finished file | Double-click its card |
+| Open the main window | <kbd>⌘</kbd> <kbd>0</kbd>, or click **Completed** in the menu bar popover |
+| Settings | <kbd>⌘</kbd> <kbd>,</kbd> |
+
+### Presets
+
+| Preset | What you get |
+| --- | --- |
+| Best quality (MP4) | Highest available quality, remuxed losslessly to MP4 |
+| 1080p (compatible) | Capped at 1080p, H.264 preferred for playback anywhere |
+| Audio · MP3 | Audio only, encoded to MP3 |
+| Audio · M4A | Audio only, original AAC stream (no re-encode) |
+| Original | Whatever the site serves, untouched |
+
+### Troubleshooting
+
+- **Downloads suddenly fail (HTTP 403, "page needs to be reloaded")**: open **Settings → Advanced → yt-dlp → Update**. YouTube changes often, and yt-dlp keeps up.
+- **Age-restricted or members-only videos**: set **Settings → Downloads → Login cookies** to the browser you're signed in with.
+- **"yt-dlp is required" banner** (source builds only): `brew install yt-dlp ffmpeg`.
+
+## Build from source
 
 ```bash
-brew install yt-dlp ffmpeg
-xcodegen generate
-open Reel.xcodeproj
+brew install xcodegen yt-dlp ffmpeg
+git clone https://github.com/waylake/reel.git
+cd reel
+xcodegen generate        # creates Reel.xcodeproj from project.yml
+open Reel.xcodeproj      # then ⌘R
 ```
 
-## 배포 및 자동 업데이트 (CI/CD)
+Run the tests:
 
-Reel은 **Sparkle 2** 프레임워크를 통해 앱 내 자동 업데이트를 지원하며, 배포 파이프라인은 GitHub Actions로 완전히 자동화되어 있습니다.
+```bash
+xcodebuild test -project Reel.xcodeproj -scheme Reel -destination 'platform=macOS'
+```
 
-1. `v1.x.x` 형식의 태그를 Push하면 `.github/workflows/release.yml` 파이프라인이 실행됩니다.
-2. `scripts/build-release.sh`를 통해 릴리즈 빌드 및 `.app.zip` 압축본을 생성합니다.
-3. Sparkle의 `generate_appcast`를 사용해 EdDSA 서명된 `appcast.xml` 피드를 자동 생성합니다.
-4. 생성된 바이너리와 피드 파일이 GitHub Releases에 업로드되며, 기존 설치된 앱에 자동으로 업데이트가 푸시됩니다.
+### Project layout
 
-> **참고**: Sparkle 자동 업데이트 서명에 사용되는 개인키는 GitHub Repository Secrets의 `SPARKLE_PRIVATE_KEY`에 저장되어 안전하게 관리됩니다.
+```
+Reel/
+├── ReelApp.swift     # App entry: menu bar extra, main window, settings
+├── Views/            # SwiftUI views (cards, menu bar popover, settings)
+├── Stores/           # @Observable state: queue, settings, clipboard, updater
+├── Engine/           # yt-dlp process actor, argument builder, progress parser
+├── Models/           # DownloadTask, DownloadOptions, presets, states
+└── Support/          # Design tokens, formatting, AppKit bridges
+```
 
-## 개인정보
+The `DownloadEngine` actor runs `yt-dlp` and streams events to the `@MainActor` `QueueStore`. The queue is saved as JSON in `~/Library/Application Support/Reel/`. For details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Reel은 모든 데이터를 기기 내에서만 보관한다. 외부 서버로 데이터를 전송하지 않는다.
-자세한 내용은 [PRIVACY.md](PRIVACY.md) 참고.
+### Releasing
 
-## 라이선스
+Push a `v*` tag. GitHub Actions builds the app, bundles `yt-dlp` and `ffmpeg`, signs the update with Sparkle's EdDSA key and publishes the zip and `appcast.xml` to GitHub Releases.
 
-Reel은 MIT 라이선스를 따르는 오픈소스 소프트웨어다.
-자세한 내용은 [LICENSE.md](LICENSE.md) 참고.
+## Contributing
 
-© 2026 waylake
+Bug reports, ideas and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md) first. To report a security issue, follow [SECURITY.md](SECURITY.md).
+
+## Acknowledgements
+
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) does the downloading.
+- [FFmpeg](https://ffmpeg.org) merges and converts the files.
+- [Sparkle](https://sparkle-project.org) delivers the updates.
+- [SponsorBlock](https://sponsor.ajay.app) provides the segment data.
+
+## Disclaimer
+
+Reel is a front end for yt-dlp. Download only content you have the right to download, and respect each site's terms of service and your local copyright law.
+
+## License
+
+[MIT](LICENSE.md) © 2026 waylake
