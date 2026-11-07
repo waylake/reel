@@ -1,13 +1,19 @@
 import SwiftUI
 
-/// 화면 B의 큐 항목 행.
+/// 화면 B의 큐 항목 카드 — 메인 윈도우 그리드의 한 칸.
+///
+/// 구성 (위→아래):
+/// 1. 16:9 썸네일 — 우하단 길이 배지, 호버 시 우상단에 빠른 동작
+/// 2. 진행바 (진행 중일 때만)
+/// 3. 제목 2줄
+/// 4. 메타 라인 + 상태 칩 / 퍼센트
 ///
 /// 디테일 규칙:
 /// - 상태는 색·점·텍스트 삼중 인코딩 (StateChip)
 /// - 호버하면 바탕이 미세하게 밝아지고, 그 상태에서 유효한 빠른 동작만 나타남
-/// - 숫자는 전부 tabular(자릿수 정렬), 진행바는 3pt 헤어라인 감성
-/// - 실패 행은 에러 요지를 그 자리에서 보여주고, 전문은 툴팁으로
-struct DownloadRowView: View {
+/// - 숫자는 전부 tabular(자릿수 정렬)
+/// - 실패 카드는 에러 요지를 그 자리에서 보여주고, 전문은 툴팁으로
+struct DownloadCardView: View {
     @Environment(QueueStore.self) private var store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let task: DownloadTask
@@ -15,58 +21,82 @@ struct DownloadRowView: View {
     @State private var hovering = false
 
     var body: some View {
-        HStack(spacing: Theme.s3) {
-            Thumbnail(url: task.thumbnailURL, width: 66, height: 40,
-                      duration: Fmt.duration(task.durationSeconds))
+        VStack(alignment: .leading, spacing: Theme.s2) {
+            thumbnail
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(task.title)
-                    .font(Theme.rowTitle)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+            // 진행바 자리는 항상 확보 — 상태가 달라도 같은 줄 카드 높이가 맞도록.
+            ThinProgressBar(value: task.progress,
+                            tint: task.state.tint,
+                            indeterminate: task.state == .encoding)
+                .opacity(task.state.isActive ? 1 : 0)
+                .accessibilityHidden(!task.state.isActive)
 
+            Text(task.title)
+                .font(Theme.rowTitle)
+                .lineLimit(2, reservesSpace: true)
+                .truncationMode(.tail)
+                .help(task.title)
+
+            HStack(alignment: .firstTextBaseline, spacing: Theme.s2) {
                 metaLine
-
-                if task.state.isActive {
-                    ThinProgressBar(value: task.progress,
-                                    tint: task.state.tint,
-                                    indeterminate: task.state == .encoding)
-                        .padding(.top, 3)
-                }
-
-                if task.state == .failed, let message = task.errorMessage {
-                    Text(errorSummary(message))
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(.red)
-                        .lineLimit(1)
-                        .help(message)   // 전문은 툴팁으로
-                }
-            }
-
-            Spacer(minLength: Theme.s2)
-
-            // 우측: 퍼센트 + 상태 칩 (호버 시 빠른 동작으로 교체)
-            if hovering {
-                quickActions
-                    .transition(.opacity)
-            } else {
-                VStack(alignment: .trailing, spacing: Theme.s1) {
-                    if task.state == .downloading {
-                        Text("\(Int(task.progress * 100))%")
-                            .font(Theme.percent).monospacedDigit()
-                    }
+                Spacer(minLength: Theme.s1)
+                if task.state == .downloading {
+                    Text("\(Int(task.progress * 100))%")
+                        .font(Theme.percent).monospacedDigit()
+                } else {
                     StateChip(state: task.state)
                 }
-                .transition(.opacity)
+            }
+
+            if task.state == .failed, let message = task.errorMessage {
+                Text(errorSummary(message))
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(.red)
+                    .lineLimit(2)
+                    .help(message)   // 전문은 툴팁으로
             }
         }
-        .padding(.vertical, Theme.s1)
-        .contentShape(Rectangle())
+        .padding(Theme.s2)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous)
+                .fill(hovering ? Theme.rowFillHover : Theme.fieldFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous)
+                .strokeBorder(Theme.hairlineColor, lineWidth: Theme.hairline)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous))
+        // 카드 클릭이 창의 "클릭하면 클립보드 링크 추가"로 새지 않게 여기서 소비한다.
+        .onTapGesture(count: 2) { if task.state == .completed { store.openFile(task) } }
+        .onTapGesture {}
         .onHover { hovering = $0 }
         .animation(Theme.motion(reduceMotion), value: hovering)
         .contextMenu { contextItems }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(task.title), \(task.state.label)")
+    }
+
+    // MARK: - 썸네일 (폭에 맞춰 16:9)
+
+    private var thumbnail: some View {
+        Color.clear
+            .aspectRatio(16 / 9, contentMode: .fit)
+            .overlay {
+                GeometryReader { geo in
+                    Thumbnail(url: task.thumbnailURL,
+                              width: geo.size.width, height: geo.size.height,
+                              duration: Fmt.duration(task.durationSeconds))
+                }
+            }
+            .overlay(alignment: .topTrailing) {
+                if hovering {
+                    quickActions
+                        .padding(Theme.s1)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .padding(Theme.s1)
+                        .transition(.opacity)
+                }
+            }
     }
 
     // MARK: - 메타 라인 (상태별 분기 — 결정은 DownloadTask.metaPhase가, 렌더링만 여기서)
@@ -81,23 +111,19 @@ struct DownloadRowView: View {
             case .downloading(let size, let speed, let eta):
                 if !size.isEmpty { Text(size) }
                 if !speed.isEmpty { Text(speed) }
-                if !eta.isEmpty { Text("남은 시간 \(eta)") }
+                if !eta.isEmpty { Text(eta) }
             case .encoding:
-                Text("후처리 중 — 병합·변환")
+                Text("병합·변환 중")
             case .completed(let subtitle):
                 if !subtitle.isEmpty { Text(subtitle) }
-                if let path = task.outputPath {
-                    Text(URL(fileURLWithPath: path).lastPathComponent)
-                        .lineLimit(1).truncationMode(.middle)
-                }
             case .waiting(let retry):
                 if let retry {
-                    Text("대기 · \(retry)")
+                    Text(retry)
                 } else {
-                    Text("대기 중 · \(task.options.preset.title)")
+                    Text(task.options.preset.title)
                 }
             case .paused(let percent):
-                Text("일시정지됨 · \(percent)%까지 받음")
+                Text("\(percent)%까지 받음")
             case .failed:
                 if !task.metaSubtitle.isEmpty { Text(task.metaSubtitle) }
             }

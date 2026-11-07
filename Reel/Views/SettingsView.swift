@@ -1,6 +1,13 @@
 import SwiftUI
 
-/// 설정 — 기본값과 부가 옵션. 변경 즉시 UserDefaults에 영속화.
+/// 설정 — 변경 즉시 UserDefaults에 영속화.
+///
+/// 구성 원칙: 자주 쓰는 것만 앞에, 나머지는 "고급"으로.
+/// - 일반: 저장 위치 · 기본 포맷 · 알림/클립보드
+/// - 다운로드: 플레이리스트 · 파일에 포함할 것 · 쿠키
+/// - 고급: 성능 · 목록 정리 · 엔진(yt-dlp/ffmpeg)
+/// 하위 옵션은 상위 토글이 켜졌을 때만 보이고, 긴 설명은 footer 대신 .help 툴팁으로 둔다.
+/// 탭마다 높이를 고정해 탭 전환 시 창이 내용 크기에 맞춰진다 (하위 옵션이 펼쳐지면 스크롤).
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(QueueStore.self) private var store
@@ -9,116 +16,108 @@ struct SettingsView: View {
     var body: some View {
         TabView {
             generalTab
+                .frame(height: 300)
                 .tabItem { Label("일반", systemImage: "gearshape") }
-            formatTab
-                .tabItem { Label("포맷", systemImage: "slider.horizontal.3") }
-            engineTab
-                .tabItem { Label("엔진", systemImage: "wrench.and.screwdriver") }
+            downloadTab
+                .frame(height: 440)
+                .tabItem { Label("다운로드", systemImage: "arrow.down.circle") }
+            advancedTab
+                .frame(height: 500)
+                .tabItem { Label("고급", systemImage: "wrench.and.screwdriver") }
         }
-        .frame(width: 520, height: 500)
+        .frame(width: 480)
     }
 
     // MARK: - 일반
 
     private var generalTab: some View {
         Form {
-            Section("기본 동작") {
-                Picker("기본 프리셋", selection: bind(\.defaultPreset)) {
+            Section {
+                LabeledContent("저장 위치") {
+                    Button(action: chooseFolder) {
+                        Label(folderName, systemImage: "folder")
+                            .lineLimit(1).truncationMode(.middle)
+                    }
+                    .help(settings.outputDirectoryPath)
+                }
+                Picker("기본 포맷", selection: bind(\.defaultPreset)) {
                     ForEach(Preset.allCases) { p in Text(p.title).tag(p) }
                 }
-                Picker("플레이리스트 기본 모드", selection: bind(\.defaultPlaylistMode)) {
-                    ForEach(PlaylistMode.allCases) { m in Text(m.title).tag(m) }
-                }
-                Stepper(value: bind(\.maxPlaylistItems), in: 1...2000) {
-                    LabeledContent("전체 받기 최대 항목", value: "\(settings.maxPlaylistItems)개")
-                }
-                .disabled(settings.defaultPlaylistMode == .single)
-                .help("일반 플레이리스트는 이 개수까지만 받습니다. 채널은 미리보기의 '전체 다운로드'를 누르면 이 제한 없이 전부 받아요.")
-            }
-            Section("동시성") {
-                Stepper(value: bind(\.maxConcurrent), in: 1...6) {
-                    LabeledContent("동시 다운로드", value: "\(settings.maxConcurrent)개")
-                }
-                Toggle("클립보드 링크 자동 감지", isOn: bind(\.autoDetectClipboard))
-                Toggle("완료 시 알림", isOn: bind(\.notifyOnComplete))
-                Toggle("저전력 프로필 (동시성↓ · 속도 8M 제한)", isOn: bind(\.lowPowerProfile))
             }
             Section {
-                Toggle("완료 항목 자동 정리", isOn: bind(\.autoClearCompleted))
-                Stepper(value: bind(\.autoClearAfterDays), in: 1...90) {
-                    LabeledContent("보관 기간", value: "\(settings.autoClearAfterDays)일")
-                }
-                .disabled(!settings.autoClearCompleted)
-            } header: {
-                Text("완료 항목")
-            } footer: {
-                Text(settings.autoClearCompleted
-                     ? "앱 시작 시 \(settings.autoClearAfterDays)일이 지난 완료 항목을 목록에서 제거합니다. 파일은 유지됩니다."
-                     : "완료된 항목이 목록에 계속 쌓입니다. 자동 정리를 켜면 기간이 지난 항목을 시작 시 제거합니다.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Section("저장 위치") {
-                LabeledContent("폴더") {
-                    HStack {
-                        Text(settings.outputDirectoryPath)
-                            .lineLimit(1).truncationMode(.middle)
-                            .foregroundStyle(.secondary)
-                        Button("변경…", action: chooseFolder).controlSize(.small)
-                    }
-                }
+                Toggle("복사한 링크 자동 감지", isOn: bind(\.autoDetectClipboard))
+                Toggle("완료되면 알림", isOn: bind(\.notifyOnComplete))
             }
             Section {
-                Toggle("파일명에 영상 ID 포함", isOn: bind(\.includeVideoID))
-            } header: {
-                Text("파일명")
-            } footer: {
-                // 라이브 미리보기 — 토글에 따라 실제 결과 예시가 바뀐다
-                Text(settings.includeVideoID
-                     ? "예: 영상 제목 [dQw4w9WgXcQ].mp4 — 같은 제목이 겹쳐도 안전해요."
-                     : "예: 영상 제목.mp4 — 제목이 같은 영상을 받으면 덮어쓸 수 있어요.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Section("앱 업데이트") {
-                Button("업데이트 확인…") {
-                    updater.checkForUpdates()
+                LabeledContent("앱 업데이트") {
+                    Button("확인…") { updater.checkForUpdates() }
                 }
             }
         }
         .formStyle(.grouped)
     }
 
-    // MARK: - 포맷
+    /// 경로 전체 대신 폴더 이름만 — 전체 경로는 툴팁으로.
+    private var folderName: String {
+        let name = (settings.outputDirectoryPath as NSString).lastPathComponent
+        return name.isEmpty ? settings.outputDirectoryPath : name
+    }
 
-    private var formatTab: some View {
+    // MARK: - 다운로드
+
+    private var downloadTab: some View {
         Form {
-            Section("자막") {
-                Toggle("자막 임베드", isOn: bind(\.embedSubtitles))
-                TextField("자막 언어 (쉼표 구분)", text: bind(\.subtitleLangsText))
-                    .disabled(!settings.embedSubtitles)
-                Toggle("자동 생성 자막 포함", isOn: bind(\.autoSubtitles))
-                    .disabled(!settings.embedSubtitles)
+            Section("플레이리스트") {
+                Picker("링크가 목록일 때", selection: bind(\.defaultPlaylistMode)) {
+                    ForEach(PlaylistMode.allCases) { m in Text(m.title).tag(m) }
+                }
+                if settings.defaultPlaylistMode != .single {
+                    LabeledContent("최대") {
+                        Stepper("\(settings.maxPlaylistItems)개", value: bind(\.maxPlaylistItems), in: 1...2000)
+                    }
+                    .help("일반 플레이리스트는 이 개수까지만 받습니다. 채널은 미리보기의 '전체 다운로드'를 누르면 제한 없이 받아요.")
+                }
             }
-            Section("메타데이터") {
-                Toggle("챕터 임베드", isOn: bind(\.embedChapters))
-                Toggle("메타데이터 임베드", isOn: bind(\.embedMetadata))
-                Toggle("썸네일 임베드", isOn: bind(\.embedThumbnail))
+            Section("파일에 포함") {
+                Toggle("자막", isOn: bind(\.embedSubtitles))
+                if settings.embedSubtitles {
+                    TextField("언어", text: bind(\.subtitleLangsText), prompt: Text("ko,en"))
+                    Toggle("자동 생성 자막도 포함", isOn: bind(\.autoSubtitles))
+                }
+                Toggle("썸네일 · 챕터 · 메타데이터", isOn: embedAllBinding)
+                Toggle("파일명에 영상 ID", isOn: bind(\.includeVideoID))
+                    .help(settings.includeVideoID
+                          ? "예: 영상 제목 [dQw4w9WgXcQ].mp4 — 같은 제목이 겹쳐도 안전해요."
+                          : "예: 영상 제목.mp4 — 제목이 같은 영상을 받으면 덮어쓸 수 있어요.")
+                Toggle("광고 구간 제거 (SponsorBlock)", isOn: bind(\.sponsorBlock))
             }
-            Section("파워 옵션") {
-                Toggle("SponsorBlock 구간 제거", isOn: bind(\.sponsorBlock))
+            Section {
                 Picker("로그인 쿠키", selection: bind(\.cookiesFromBrowser)) {
                     Text("사용 안 함").tag("")
                     Text("Safari").tag("safari")
                     Text("Chrome").tag("chrome")
                     Text("Firefox").tag("firefox")
                 }
+                .help("연령 제한·멤버십 영상처럼 로그인이 필요할 때 브라우저의 로그인 정보를 사용합니다.")
             }
         }
         .formStyle(.grouped)
     }
 
-    // MARK: - 엔진
+    /// 썸네일·챕터·메타데이터를 하나의 토글로 묶는다. 하나라도 꺼져 있으면 꺼진 것으로 표시.
+    private var embedAllBinding: Binding<Bool> {
+        Binding(
+            get: { settings.embedThumbnail && settings.embedChapters && settings.embedMetadata },
+            set: { on in
+                settings.embedThumbnail = on
+                settings.embedChapters = on
+                settings.embedMetadata = on
+                settings.persist()
+            }
+        )
+    }
+
+    // MARK: - 고급
 
     @State private var ytdlpVersion: String?
     @State private var updating = false
@@ -126,81 +125,52 @@ struct SettingsView: View {
     @State private var updateOk = false
     @State private var showSites = false
 
-    private var engineTab: some View {
+    private var advancedTab: some View {
         Form {
-            Section {
-                LabeledContent("yt-dlp 버전") {
+            Section("성능") {
+                LabeledContent("동시 다운로드") {
+                    Stepper("\(settings.maxConcurrent)개", value: bind(\.maxConcurrent), in: 1...6)
+                }
+                Toggle("저전력 모드", isOn: bind(\.lowPowerProfile))
+                    .help("동시 다운로드를 줄이고 속도를 8MB/s로 제한합니다.")
+            }
+            Section("목록 정리") {
+                Toggle("완료 항목 자동 삭제", isOn: bind(\.autoClearCompleted))
+                    .help("앱 시작 시 기간이 지난 완료 항목을 목록에서 지웁니다. 파일은 그대로 남아요.")
+                if settings.autoClearCompleted {
+                    LabeledContent("보관 기간") {
+                        Stepper("\(settings.autoClearAfterDays)일", value: bind(\.autoClearAfterDays), in: 1...90)
+                    }
+                }
+            }
+            Section("엔진") {
+                LabeledContent("yt-dlp") {
                     HStack(spacing: Theme.s2) {
-                        if let v = ytdlpVersion {
-                            Text(v).font(.system(.body, design: .monospaced))
-                        } else if BinaryResolver.ytdlp == nil {
-                            Text("설치되지 않음").foregroundStyle(.red)
-                        } else {
-                            ProgressView().controlSize(.small)
-                        }
-                        Button("새로고침") { refreshVersion() }
-                            .controlSize(.small)
-                            .disabled(BinaryResolver.ytdlp == nil)
-                    }
-                }
-                if BinaryResolver.ytdlp != nil {
-                    Button {
-                        runUpdate()
-                    } label: {
-                        if updating {
-                            HStack { ProgressView().controlSize(.small); Text("업데이트 중…") }
-                        } else {
-                            Text("yt-dlp 업데이트")
+                        ytdlpStatus
+                        if BinaryResolver.ytdlp != nil {
+                            Button(updating ? "업데이트 중…" : "업데이트") { runUpdate() }
+                                .controlSize(.small)
+                                .disabled(updating)
+                                .help("다운로드가 갑자기 안 되면(403 등) 먼저 업데이트해 보세요. 재시작 없이 바로 적용돼요.")
                         }
                     }
-                    .disabled(updating)
-                    .help("GitHub 최신 릴리스를 받아 앱 안에 설치합니다. 재시작 없이 바로 적용돼요.")
-                    if let msg = updateMessage {
-                        Label(msg, systemImage: updateOk ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                            .font(.caption)
-                            .foregroundStyle(updateOk ? .green : .orange)
-                            .lineLimit(3)
-                    }
-                    if BinaryResolver.isBundled {
-                        Text("번들 포함 yt-dlp는 앱 릴리즈 시점에 고정돼요. 업데이트를 누르면 최신본을 앱 지원 폴더에 따로 설치해 그것을 우선 사용합니다.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
                 }
-            } header: {
-                Text("yt-dlp")
-            } footer: {
-                Text("yt-dlp는 유튜브 봇 방지 대응 때문에 자주 업데이트됩니다. 다운로드가 갑자기 안 되면(403 · 페이지를 다시 로드해야 합니다 등) 먼저 업데이트를 시도해 보세요.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Section {
-                Button("지원 사이트 목록 보기…") { showSites = true }
-            } footer: {
-                Text("yt-dlp가 지원하는 사이트 전체 목록입니다. 항상 설치된 버전 기준입니다.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Section {
+                if let msg = updateMessage {
+                    Label(msg, systemImage: updateOk ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(updateOk ? .green : .orange)
+                        .lineLimit(3)
+                }
                 LabeledContent("ffmpeg") {
                     if BinaryResolver.ffmpeg != nil {
-                        Label("감지됨", systemImage: "checkmark.circle.fill")
+                        Label("사용 가능", systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
-                            .font(.body)
                     } else {
-                        Label("미감지", systemImage: "exclamationmark.triangle.fill")
+                        Label("없음 — brew install ffmpeg", systemImage: "exclamationmark.triangle.fill")
                             .foregroundStyle(.red)
-                            .font(.body)
                     }
                 }
-            } header: {
-                Text("ffmpeg")
-            } footer: {
-                Text("영상 병합·변환·오디오 추출에 필요합니다. brew install ffmpeg 로 설치하세요.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Button("지원 사이트 목록…") { showSites = true }
             }
         }
         .formStyle(.grouped)
@@ -208,6 +178,16 @@ struct SettingsView: View {
         .sheet(isPresented: $showSites) {
             SupportedSitesView()
                 .frame(minWidth: 480, minHeight: 420)
+        }
+    }
+
+    @ViewBuilder private var ytdlpStatus: some View {
+        if let v = ytdlpVersion {
+            Text(v).font(.system(.body, design: .monospaced)).foregroundStyle(.secondary)
+        } else if BinaryResolver.ytdlp == nil {
+            Text("설치되지 않음").foregroundStyle(.red)
+        } else {
+            ProgressView().controlSize(.small)
         }
     }
 

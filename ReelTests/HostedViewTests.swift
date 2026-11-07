@@ -40,9 +40,9 @@ struct HostedViewTests {
         return task
     }
 
-    // MARK: - DownloadRowView: 전 상태에서 크래시 없이 렌더링
+    // MARK: - DownloadCardView: 전 상태에서 크래시 없이 렌더링
 
-    @Test("다운로드 행이 모든 상태에서 크래시 없이 렌더링된다",
+    @Test("다운로드 카드가 모든 상태에서 크래시 없이 렌더링된다",
           arguments: [
             DownloadState.queued, .downloading, .encoding,
             .completed, .failed, .paused, .cancelled,
@@ -50,14 +50,14 @@ struct HostedViewTests {
     func downloadRowRendersInAllStates(_ state: DownloadState) {
         let store = makeStore()
         let task = makeTask(state: state, progress: 0.5, speed: "1 MB/s", eta: "01:00")
-        render(DownloadRowView(task: task).environment(store))
+        render(DownloadCardView(task: task).environment(store))
     }
 
     @Test("추출 단계(0%·속도 없음)에서도 렌더링된다")
     func downloadRowRendersExtractingPhase() {
         let store = makeStore()
         let task = makeTask(state: .downloading, progress: 0, speed: "")
-        render(DownloadRowView(task: task).environment(store))
+        render(DownloadCardView(task: task).environment(store))
     }
 
     @Test("메인 윈도우가 빈 큐로 렌더링된다")

@@ -74,7 +74,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let hosting = NSHostingController(rootView: rootView)
         let window = NSWindow(contentViewController: hosting)
         window.title = "Reel"
-        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
+        window.titlebarAppearsTransparent = true   // 반투명 배경이 제목줄까지 이어지도록
         window.setContentSize(NSSize(width: 940, height: 580))
         window.minSize = NSSize(width: 720, height: 440)
         window.toolbarStyle = .unified   // 제목줄과 툴바를 하나로 — 최신 macOS 기본 형태

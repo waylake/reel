@@ -1,11 +1,14 @@
 import SwiftUI
 
-/// 화면 B — 메인 윈도우. 항목 한 줄 목록이 전부다.
+/// 화면 B — 메인 윈도우. 항목 카드 그리드가 전부다.
 ///
 /// 입력창 없이 클립보드로 동작한다:
 /// - 창 어디를 누르면 클립보드 링크가 큐에 추가된다 (⌘V와 동일)
 /// - 링크를 창으로 드래그해도 추가된다
-/// - 툴바: 붙여넣기 · (완료 항목이 있을 때) 완료 지우기
+/// - 툴바: (완료 항목이 있을 때) 완료 지우기
+///
+/// 배경은 항목 유무와 관계없이 항상 창 뒤가 비치는 반투명(VisualEffectBackground)이다.
+/// 카드 그리드는 ScrollView라 자체 배경이 없다 (List는 불투명 배경을 그려 빈 화면과 색이 달랐다).
 struct MainWindowView: View {
     @Environment(QueueStore.self) private var store
     @State private var dropTargeted = false
@@ -15,7 +18,7 @@ struct MainWindowView: View {
             .contentShape(Rectangle())
             .onTapGesture { pasteFromClipboard() }
             .toolbar { toolbarContent }
-            .safeAreaInset(edge: .bottom, spacing: 0) { statusBar }
+            .background(VisualEffectBackground().ignoresSafeArea())
             .dropDestination(for: URL.self) { urls, _ in
                 handleDrop(urls)
             } isTargeted: { dropTargeted = $0 }
@@ -38,8 +41,6 @@ struct MainWindowView: View {
                 Button("완료 지우기", systemImage: "trash") { store.clearCompleted() }
                     .help("완료된 항목을 목록에서 제거합니다 (파일은 유지)")
             }
-            Button("붙여넣기", systemImage: "doc.on.clipboard") { pasteFromClipboard() }
-                .help("클립보드의 링크를 다운로드 목록에 추가 (⌘V)")
         }
     }
 
@@ -54,41 +55,16 @@ struct MainWindowView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            List(store.tasks) { task in
-                DownloadRowView(task: task)
-            }
-            .listStyle(.inset)
-        }
-    }
-
-    // MARK: - 하단 상태 막대
-
-    private var statusBar: some View {
-        HStack(spacing: Theme.s3) {
-            if store.activeCount > 0 {
-                Label("\(store.activeCount)개 진행 중", systemImage: "arrow.down.circle")
-                if store.overallProgress > 0 {
-                    Text("\(Int(store.overallProgress * 100))%")
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 220, maximum: 320), spacing: Theme.s3)],
+                          spacing: Theme.s3) {
+                    ForEach(store.tasks) { task in
+                        DownloadCardView(task: task)
+                    }
                 }
+                .padding(Theme.s4)
             }
-            if store.queuedCount > 0 {
-                Text("대기 \(store.queuedCount)")
-            }
-            if store.activeCount == 0 && store.queuedCount == 0 {
-                Text("대기 중")
-            }
-            Spacer()
-            Text("동시 \(store.settings.effectiveConcurrency)개")
-                .help(store.settings.lowPowerProfile
-                      ? "저전력 프로필이 켜져 있어 동시성이 제한됩니다"
-                      : "설정에서 동시 다운로드 수를 조절할 수 있습니다")
         }
-        .font(.caption).monospacedDigit()
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, Theme.s3)
-        .padding(.vertical, Theme.s2)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.bar)
     }
 
     // MARK: - 동작

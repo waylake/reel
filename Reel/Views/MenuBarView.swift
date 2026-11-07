@@ -5,7 +5,7 @@ import SwiftUI
 /// 입력창 없이 클립보드로 동작한다:
 /// - 팝오버 어디를 누르면 클립보드 링크가 큐에 추가된다 (⌘V와 동일)
 /// 1. (있을 때만) 클립보드 감지 배너 / yt-dlp 미설치 배너
-/// 2. 진행 중 항목 목록
+/// 2. 썸네일 카드 — 진행 중 항목 + 최근 완료 3개
 /// 3. 푸터 — 완료 요약 · 저장 위치 · 설정 · 종료
 struct MenuBarView: View {
     @Environment(QueueStore.self) private var store
@@ -14,6 +14,11 @@ struct MenuBarView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var engineMissing: Bool { BinaryResolver.ytdlp == nil }
+
+    /// 스크롤 내용의 실제 높이. 팝오버는 ScrollView의 이상적 높이를 0으로 잡을 수 있어
+    /// 측정값으로 높이를 정하고 최대 높이를 넘으면 스크롤한다.
+    @State private var contentHeight: CGFloat = 0
+    private let maxListHeight: CGFloat = 520
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -31,8 +36,9 @@ struct MenuBarView: View {
                 }
                 .padding(Theme.s3)
                 .animation(Theme.motion(reduceMotion), value: clipboard.detectedURL)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
             }
-            .frame(maxHeight: 460)
+            .frame(height: min(max(contentHeight, 1), maxListHeight))
 
             Rectangle().fill(Theme.hairlineColor).frame(height: Theme.hairline)
             footer
@@ -85,31 +91,48 @@ struct MenuBarView: View {
         )
     }
 
-    // MARK: - 큐 리스트 (활성 항목만 — 메뉴바는 상태 요약이 목적)
+    // MARK: - 카드 목록 (진행 중 + 최근 완료)
 
-    /// 진행 중인 항목만 표시. 완료·실패는 메인 윈도우에서 관리.
+    /// 진행 중·대기·일시정지 항목. 실패·취소는 메인 윈도우에서 관리.
     private var activeTasks: [DownloadTask] {
-        store.tasks.filter { $0.state.isActive }
+        store.tasks.filter { $0.state.isActive || $0.state == .queued || $0.state == .paused }
+    }
+
+    /// 최근 완료 3개 — 팝오버를 열었을 때 방금 받은 것을 썸네일로 바로 확인.
+    private var recentCompleted: [DownloadTask] {
+        store.tasks
+            .filter { $0.state == .completed }
+            .sorted { ($0.completedAt ?? $0.createdAt) > ($1.completedAt ?? $1.createdAt) }
+            .prefix(3)
+            .map { $0 }
     }
 
     @ViewBuilder private var queueList: some View {
-        if activeTasks.isEmpty {
-            VStack(spacing: Theme.s1) {
-                Text("받은 항목이 여기에 표시됩니다")
-                    .font(.system(size: 11))
+        if activeTasks.isEmpty && recentCompleted.isEmpty {
+            VStack(spacing: Theme.s2) {
+                Image(systemName: "arrow.down.circle.dotted")
+                    .font(.system(size: 28, weight: .light))
                     .foregroundStyle(.tertiary)
+                Text("링크를 복사한 뒤 여기를 누르세요")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, Theme.s4)
+            .padding(.vertical, Theme.s4 * 2)
         } else {
-            VStack(spacing: 0) {
-                ForEach(Array(activeTasks.enumerated()), id: \.element.id) { index, task in
-                    if index > 0 {
-                        Rectangle().fill(Theme.hairlineColor)
-                            .frame(height: Theme.hairline)
-                            .padding(.leading, 56)
+            VStack(alignment: .leading, spacing: Theme.s2) {
+                ForEach(activeTasks) { task in
+                    MiniCard(task: task)
+                }
+                if !recentCompleted.isEmpty {
+                    Text("최근 받은 항목")
+                        .font(.system(size: 10.5, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.top, activeTasks.isEmpty ? 0 : Theme.s2)
+                        .padding(.leading, Theme.s1)
+                    ForEach(recentCompleted) { task in
+                        MiniCard(task: task)
                     }
-                    MiniRow(task: task)
                 }
             }
         }
@@ -225,89 +248,100 @@ private struct SetupBanner: View {
     }
 }
 
-// MARK: - 미니 행 (호버 시 빠른 동작)
+// MARK: - 미니 카드 (메인 윈도우 카드의 가로형 축소판)
 
-private struct MiniRow: View {
+/// 썸네일(16:9) + 제목 2줄 + 진행바/메타. 호버하면 썸네일 위에 빠른 동작이 뜬다.
+/// 카드 클릭은 팝오버의 "클릭하면 클립보드 링크 추가"로 새지 않게 여기서 소비한다.
+private struct MiniCard: View {
     @Environment(QueueStore.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let task: DownloadTask
     @State private var hovering = false
 
     var body: some View {
         HStack(spacing: Theme.s3) {
-            Thumbnail(url: task.thumbnailURL, width: 46, height: 30,
+            Thumbnail(url: task.thumbnailURL, width: 96, height: 54,
                       duration: Fmt.duration(task.durationSeconds))
-            VStack(alignment: .leading, spacing: 3) {
+                .opacity(task.state == .queued ? 0.55 : 1)
+                .overlay {
+                    if hovering, let action = primaryAction {
+                        QuickIconButton(symbol: action.symbol, help: action.help, action: action.run)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .transition(.opacity)
+                    }
+                }
+
+            VStack(alignment: .leading, spacing: Theme.s1) {
                 Text(task.title)
-                    .font(.system(size: 12))
-                    .lineLimit(1)
+                    .font(.system(size: 12, weight: .medium))
+                    .lineLimit(2)
+                Spacer(minLength: 0)
                 if task.state.isActive {
                     ThinProgressBar(value: task.progress,
                                     tint: task.state.tint,
                                     indeterminate: task.state == .encoding)
                 }
-                if let rt = task.retryText, task.state == .queued {
-                    Text(rt)
-                        .font(.system(size: 9.5))
-                        .foregroundStyle(.orange)
-                }
+                meta
             }
-            Spacer(minLength: Theme.s1)
-            trailing
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 54)
         }
-        .padding(.vertical, 7)
-        .contentShape(Rectangle())
+        .padding(Theme.s2)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous)
+                .fill(hovering ? Theme.rowFillHover : Theme.fieldFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous)
+                .strokeBorder(Theme.hairlineColor, lineWidth: Theme.hairline)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: Theme.rRow, style: .continuous))
+        .onTapGesture { if task.state == .completed { store.openFile(task) } }
         .onHover { hovering = $0 }
+        .animation(Theme.motion(reduceMotion), value: hovering)
         .contextMenu { contextItems }
+        .help(task.state == .completed ? "클릭하면 열기" : "")
     }
 
-    @ViewBuilder private var trailing: some View {
-        switch task.state {
-        case .downloading:
-            if hovering {
-                QuickIconButton(symbol: "xmark.circle", help: "취소") { store.cancel(task) }
-            } else {
-                Text("\(Int(task.progress * 100))%")
-                    .font(Theme.rowMeta).monospacedDigit()
-                    .foregroundStyle(.secondary)
-            }
-        case .encoding:
-            Text("변환 중")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.orange)
-        case .completed:
-            if hovering {
-                QuickIconButton(symbol: "magnifyingglass", help: "Finder에서 보기") {
-                    store.revealInFinder(task)
-                }
-            } else {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 12)).foregroundStyle(.green)
-            }
-        case .failed:
-            if hovering {
-                QuickIconButton(symbol: "arrow.clockwise", help: "다시 시도") { store.retry(task) }
-            } else {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 11)).foregroundStyle(.red)
+    /// 상태별 한 줄 — 진행 중이면 퍼센트·속도·남은 시간, 완료면 크기, 그 외엔 상태 칩.
+    @ViewBuilder private var meta: some View {
+        HStack(spacing: Theme.s2) {
+            switch task.metaPhase {
+            case .downloading(_, let speed, let eta):
+                Text("\(Int(task.progress * 100))%").fontWeight(.semibold).foregroundStyle(.primary)
+                if !speed.isEmpty { Text(speed) }
+                Spacer(minLength: 0)
+                if !eta.isEmpty { Text(eta) }
+            case .extracting:
+                Text("영상 정보 가져오는 중…")
+            case .encoding:
+                Text("병합·변환 중").foregroundStyle(.orange)
+            case .completed(let subtitle):
+                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                if !subtitle.isEmpty { Text(subtitle) }
+            case .waiting(let retry):
+                if let retry { Text(retry).foregroundStyle(.orange) }
+            case .paused(let percent):
+                Image(systemName: "pause.circle")
+                Text("\(percent)%")
+            case .failed:
+                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
                     .help(task.errorMessage ?? "실패")
             }
-        case .queued:
-            if task.retryCount > 0 {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 11)).foregroundStyle(.orange)
-                    .help("일시적 오류 — 재시도 예정")
-            } else {
-                Text("대기")
-                    .font(.system(size: 10)).foregroundStyle(.tertiary)
-            }
-        case .paused:
-            if hovering {
-                QuickIconButton(symbol: "play.circle", help: "재개") { store.resume(task) }
-            } else {
-                Image(systemName: "pause.circle").font(.system(size: 12)).foregroundStyle(.secondary)
-            }
-        case .cancelled:
-            Image(systemName: "xmark.circle").font(.system(size: 12)).foregroundStyle(.tertiary)
+        }
+        .font(.system(size: 10.5)).monospacedDigit()
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+    }
+
+    /// 호버 시 썸네일 위에 뜨는 대표 동작 하나.
+    private var primaryAction: (symbol: String, help: String, run: () -> Void)? {
+        switch task.state {
+        case .downloading: ("pause.fill", "일시정지", { store.pause(task) })
+        case .paused: ("play.fill", "재개", { store.resume(task) })
+        case .encoding, .queued: ("xmark", "취소", { store.cancel(task) })
+        case .completed: ("magnifyingglass", "Finder에서 보기", { store.revealInFinder(task) })
+        case .failed, .cancelled: ("arrow.clockwise", "다시 시도", { store.retry(task) })
         }
     }
 
