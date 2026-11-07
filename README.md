@@ -15,7 +15,7 @@ powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpe
 ![Swift](https://img.shields.io/badge/Swift-5-F05138?logo=swift&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 
-[**Download**](https://github.com/waylake/reel/releases/latest) · [Features](#features) · [Install](#install) · [Build from source](#build-from-source) · [Contributing](CONTRIBUTING.md)
+[**Download**](https://github.com/waylake/reel/releases/latest) · [Website](https://waylake.github.io/reel/) · [Features](#features) · [Install](#install) · [Build from source](#build-from-source) · [Contributing](CONTRIBUTING.md)
 
 <br>
 
