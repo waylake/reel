@@ -72,6 +72,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .environment(store)
             .environment(settings)
         let hosting = NSHostingController(rootView: rootView)
+        // 창 크기를 SwiftUI 이상적 크기에 맞추지 않는다 — 최소 크기만 반영.
+        // 카드 그리드(ScrollView + LazyVGrid)는 이상적 폭이 0에 가까워, 기본 동작이면
+        // 창이 폭 32pt로 쪼그라들었다. (v1.3.0)
+        hosting.sizingOptions = [.minSize]
         let window = NSWindow(contentViewController: hosting)
         window.title = "Reel"
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]

@@ -15,6 +15,7 @@ struct MainWindowView: View {
 
     var body: some View {
         content
+            .frame(minWidth: 720, maxWidth: .infinity, minHeight: 440, maxHeight: .infinity)
             .contentShape(Rectangle())
             .onTapGesture { pasteFromClipboard() }
             .toolbar { toolbarContent }
