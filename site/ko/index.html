@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reel — 링크를 복사하고 ⌘V. 네이티브 macOS 다운로더</title>
+<meta name="description" content="Reel은 YouTube를 비롯한 1,800개 사이트에서 받아오는 네이티브 macOS 메뉴 막대 다운로더입니다. 링크를 복사하고 ⌘V를 누르면 끝. yt-dlp와 ffmpeg 기반, 무료 오픈소스, 계정과 텔레메트리 없음.">
+<meta name="theme-color" content="#07080a">
+<link rel="canonical" href="https://reel.waylake.com/ko/">
+<link rel="alternate" hreflang="en" href="https://reel.waylake.com/">
+<link rel="alternate" hreflang="ko" href="https://reel.waylake.com/ko/">
+<link rel="icon" type="image/png" href="../icon.png">
+<link rel="apple-touch-icon" href="../icon.png">
+<link rel="stylesheet" href="../assets/site.css">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Reel">
+<meta property="og:title" content="Reel — 링크를 복사하고 ⌘V.">
+<meta property="og:description" content="YouTube를 비롯한 1,800개 사이트를 받는 네이티브 macOS 다운로더. 무료 오픈소스.">
+<meta property="og:url" content="https://reel.waylake.com/ko/">
+<meta property="og:image" content="https://reel.waylake.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://reel.waylake.com/og.png">
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="../"><img src="../icon.png" width="22" height="22" alt="">Reel</a>
+    <nav class="nav-links" aria-label="주요 메뉴">
+      <a class="opt" href="#how">사용법</a>
+      <a href="#install">설치</a>
+      <a href="../docs.html">문서</a>
+      <a class="changelog" href="../changelog.html">변경 기록</a>
+      <a href="https://github.com/waylake/reel">GitHub</a>
+      <span class="lang"><a href="../">EN</a><span class="slash" aria-hidden="true">/</span><a href="./" aria-current="true">KO</a></span>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="kicker">macOS 메뉴 막대 앱 · 무료 오픈소스</p>
+        <h1>링크를 복사하고,<br><span class="key">⌘</span><span class="key">V</span>만 누르세요</h1>
+        <p class="lede">Reel은 YouTube를 비롯한 1,800개 사이트에서 받아오는 네이티브 macOS 다운로더입니다. yt-dlp와 ffmpeg가 맥 안에서 돌아갑니다. Electron도, 계정도, 텔레메트리도 없습니다.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">macOS용 다운로드
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 13h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <button class="copyfield" type="button" data-copy="brew install --cask waylake/tap/reel">
+            <code>brew install --cask waylake/tap/reel</code>
+            <span class="copy-hint">복사</span>
+          </button>
+        </div>
+        <p class="stamp">
+          <span>v<span data-version>1.3.2</span></span>
+          <span><span data-size>59 MB</span></span>
+          <span>macOS 14 Sonoma 이상</span>
+          <span>Apple silicon · Intel</span>
+        </p>
+      </div>
+      <figure class="hero-shot">
+        <img src="../screenshots/main-window.png" width="1600" height="1052" fetchpriority="high"
+             alt="Reel 메인 창. 썸네일 카드로 표시된 다운로드 목록과 진행률, 속도, 남은 시간.">
+      </figure>
+    </div>
+  </section>
+
+  <div class="facts">
+    <div class="wrap">
+      <ul>
+        <li>네이티브 SwiftUI</li>
+        <li>동시 다운로드 6개</li>
+        <li>재생목록 · 채널</li>
+        <li>SponsorBlock</li>
+        <li>서명된 자동 업데이트</li>
+        <li>MIT</li>
+      </ul>
+    </div>
+  </div>
+
+  <section class="sec" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">01 / 사용법</div>
+        <div class="sec-title">
+          <h2>세 단계, 단축키 하나.</h2>
+          <p>주소를 붙여넣는 입력창도, 포맷을 고르는 대화상자도 없습니다. 이미 복사한 링크에서 시작합니다.</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-mark"><span class="n">01</span><span class="key">⌘</span><span class="key">C</span></div>
+          <div class="step-body">
+            <h3>링크를 복사합니다</h3>
+            <p>영상이나 오디오 페이지라면 무엇이든: YouTube, Vimeo, Twitch, TikTok, SoundCloud, 그리고 yt-dlp가 아는 나머지 1,800개 사이트.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-mark"><span class="n">02</span><span class="key">⌘</span><span class="key">V</span></div>
+          <div class="step-body">
+            <h3>Reel에서 붙여넣습니다</h3>
+            <p>Reel은 메뉴 막대에 있습니다. 클립보드를 로컬에서 읽어 링크를 찾아 팝오버에 보여주고, ⌘V를 누르면 큐에 들어갑니다. 링크나 <code>.txt</code> 목록을 창에 끌어다 놓아도 됩니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-mark"><span class="n">03</span><span class="chip">~/Movies/Reel</span></div>
+          <div class="step-body">
+            <h3>프리셋은 한 번만</h3>
+            <p>최고 화질 MP4, 호환성을 위한 1080p H.264, MP3, M4A, 또는 원본 그대로. 바꾸기 전까지 모든 다운로드에 같은 설정이 쓰입니다. 파일은 지정한 폴더에 저장됩니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">02 / 기능</div>
+        <div class="sec-title">
+          <h2>엔진은 크고, 앱은 작게.</h2>
+          <p>추출은 Reel이 하지 않습니다. 그 일은 yt-dlp가 하고, ffmpeg가 합치고 변환합니다. Reel은 네이티브인 부분만 맡습니다. 큐, 클립보드, 카드, 업데이트 경로.</p>
+        </div>
+      </div>
+
+      <dl class="rows">
+        <div class="row">
+          <dt>클립보드</dt>
+          <dd>Reel은 클립보드를 로컬에서만 읽어 미디어 링크를 찾습니다. 찾은 링크는 메뉴 막대에 뜨고, 어디로도 전송되지 않습니다. 설정에서 감지를 끌 수 있습니다.</dd>
+        </div>
+        <div class="row">
+          <dt>프리셋</dt>
+          <dd><strong>최고 화질 MP4</strong>, 호환성을 위한 1080p H.264, MP3, M4A, 또는 재인코딩 없는 원본 파일.</dd>
+        </div>
+        <div class="row">
+          <dt>재생목록</dt>
+          <dd>재생목록이나 채널 전체를 큐에 넣습니다. 항목 수 제한이 있어 900개짜리 채널이 디스크를 채우는 일은 없습니다.</dd>
+        </div>
+        <div class="row">
+          <dt>파일</dt>
+          <dd>자동 생성 자막을 포함한 자막, 챕터, 메타데이터, 썸네일을 파일에 넣습니다. SponsorBlock으로 광고 구간을 건너뜁니다.</dd>
+        </div>
+        <div class="row">
+          <dt>엔진</dt>
+          <dd>yt-dlp와 ffmpeg가 앱에 포함되어 있습니다. 사이트가 바뀌면 엔진만 제자리에서 업데이트합니다. 앱을 다시 켤 필요도, 터미널을 열 필요도 없습니다. 일시적인 YouTube 오류는 백오프로 재시도합니다.</dd>
+        </div>
+        <div class="row">
+          <dt>로그인</dt>
+          <dd>멤버십이나 연령 제한 영상은 Safari, Chrome, Firefox의 쿠키를 넘겨서 받습니다. 쿠키는 맥을 떠나지 않습니다.</dd>
+        </div>
+        <div class="row">
+          <dt>큐</dt>
+          <dd>동시에 최대 6개. 언제 꺼도 되고, 끝나지 않은 항목은 다음 실행에서 이어집니다.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec" id="screens">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">03 / 화면</div>
+        <div class="sec-title">
+          <h2>메뉴 막대와 창, 그게 전부.</h2>
+          <p>지금 무슨 일이 일어나는지 보는 팝오버, 큐를 훑어보고 싶을 때 여는 창. 두 개면 충분합니다.</p>
+        </div>
+      </div>
+
+      <div class="shots">
+        <figure class="shot">
+          <img src="../screenshots/menu-bar.png" width="530" height="640" loading="lazy"
+               alt="Reel 메뉴 막대 팝오버. 진행 중인 다운로드와 최근 파일 목록.">
+          <figcaption><b>메뉴 막대</b>진행 중인 다운로드와 최근 파일을 어디서든 한 번에.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="../screenshots/settings-downloads.png" width="960" height="1056" loading="lazy"
+               alt="Reel 설정 화면. 재생목록, 자막, 임베드 옵션, SponsorBlock.">
+          <figcaption><b>설정</b>프리셋, 자막, 임베드, SponsorBlock을 한 번만 정해두면 됩니다.</figcaption>
+        </figure>
+      </div>
+      <p class="gallery-note">인터페이스는 아직 한국어입니다. 영어를 비롯한 다른 언어를 준비하고 있습니다.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="limits">
+    <div class="wrap">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="sec-num">04 / 한계</div>
+          <div class="sec-title">
+            <h2>Reel이 하지 않는 것</h2>
+            <p>모든 걸 된다고 말하는 다운로더는 보통 무언가를 숨기고 있습니다. 솔직하게 적습니다.</p>
+          </div>
+        </div>
+        <ul class="negatives">
+            <li><span><b>계정이 없습니다.</b> 가입도, 로그인도, 동기화도 없습니다.</span></li>
+            <li><span><b>텔레메트리가 없습니다.</b> 분석도, 크래시 리포트도, 광고도 없습니다. 앱이 스스로 하는 통신은 업데이트 확인뿐입니다.</span></li>
+            <li><span><b>DRM을 우회하지 않습니다.</b> 서비스가 스트림을 암호화했다면 Reel은 받지 못합니다. 이건 열쇠가 아니라 다운로더입니다.</span></li>
+            <li><span><b>브라우저 확장이 없습니다.</b> 대신 아무 브라우저에서나 복사하면 됩니다. 그게 인터페이스 전부입니다.</span></li>
+            <li><span><b>숫자를 만들지 않습니다.</b> “1,800개 사이트”는 yt-dlp의 추출기 목록이지 마케팅 수치가 아닙니다. 그중 일부는 어느 날이든 깨져 있을 수 있습니다.</span></li>
+          </ul>
+        <p class="panel-foot">추출은 모두 yt-dlp의 일이고 Unlicense입니다. Reel은 그 위의 얇은 네이티브 프런트엔드입니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="install">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">05 / 설치</div>
+        <div class="sec-title">
+          <h2>1분이면 끝납니다.</h2>
+          <p>macOS 14 Sonoma 이상, Apple silicon 또는 Intel. yt-dlp와 ffmpeg가 앱에 들어 있어 따로 설치할 것은 없습니다.</p>
+        </div>
+      </div>
+
+      <div class="installer">
+        <div class="tablist" role="tablist" aria-label="설치 방법">
+          <button class="tab" role="tab" id="tab-dmg" aria-controls="panel-dmg" aria-selected="true" type="button">다운로드</button>
+          <button class="tab" role="tab" id="tab-brew" aria-controls="panel-brew" aria-selected="false" type="button">Homebrew</button>
+          <button class="tab" role="tab" id="tab-src" aria-controls="panel-src" aria-selected="false" type="button">소스에서 빌드</button>
+        </div>
+
+        <div class="tabpanel" id="panel-dmg" role="tabpanel" aria-labelledby="tab-dmg">
+          <div class="panel-main">
+            <p>zip을 내려받아 압축을 풀고 <strong>Reel.app</strong>을 응용 프로그램 폴더로 옮기면 됩니다.</p>
+            <div class="btn-row">
+              <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">Reel.app.zip 다운로드</a>
+            </div>
+          </div>
+          <div class="note">
+            <span class="note-mark">안내</span>
+            <span>Reel은 아직 공증(notarization)을 받지 않았습니다. 첫 실행 때 macOS가 막으면 <b>Reel.app을 오른쪽 클릭 → 열기</b>를 한 번만 해주세요. 그다음부터는 정상 실행됩니다. Homebrew 방식은 이 과정이 필요 없습니다.</span>
+          </div>
+        </div>
+
+        <div class="tabpanel" id="panel-brew" role="tabpanel" aria-labelledby="tab-brew" hidden>
+          <div class="panel-main">
+            <p>Homebrew로 설치하면 같은 앱을 받고 격리 속성 문제도 생기지 않습니다.</p>
+            <div class="field">
+              <pre><span class="prompt">$ </span>brew install --cask waylake/tap/reel</pre>
+              <button class="copyfield" type="button" data-copy="brew install --cask waylake/tap/reel"><span class="copy-hint">복사</span></button>
+            </div>
+          </div>
+          <div class="note">
+            <span class="note-mark">신뢰</span>
+            <span>Homebrew 6.0부터 서드파티 tap은 명시적 신뢰가 필요합니다. cask 전체 이름으로 설치하면 이 cask 하나만 신뢰합니다.</span>
+          </div>
+        </div>
+
+        <div class="tabpanel" id="panel-src" role="tabpanel" aria-labelledby="tab-src" hidden>
+          <div class="panel-main">
+          <p>직접 빌드합니다. 번들 엔진 없이도 만들 수 있습니다.</p>
+          <div class="field">
+            <pre><span class="prompt">$ </span>brew install xcodegen yt-dlp ffmpeg
+<span class="prompt">$ </span>git clone https://github.com/waylake/reel.git
+<span class="prompt">$ </span>cd reel &amp;&amp; xcodegen generate
+<span class="prompt">$ </span>open Reel.xcodeproj</pre>
+            <button class="copyfield" type="button" data-copy="brew install xcodegen yt-dlp ffmpeg
+git clone https://github.com/waylake/reel.git
+cd reel &amp;&amp; xcodegen generate
+open Reel.xcodeproj"><span class="copy-hint">복사</span></button>
+          </div>
+          <p>기여는 환영합니다. 먼저 <a href="https://github.com/waylake/reel/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>를 읽어주세요.</p>
+          </div>
+          <div class="note">
+            <span class="note-mark">필요</span>
+            <span>Xcode 16 이상, XcodeGen, Homebrew. 로컬 빌드에는 Apple 개발자 계정이 필요하지 않습니다.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">06 / 질문</div>
+        <div class="sec-title">
+          <h2>광고 없는 답변.</h2>
+          <p>아래 내용은 정확한 오류 메시지와 함께 <a class="head-link" href="../docs.html">문서</a>에 정리되어 있습니다.</p>
+        </div>
+      </div>
+
+      <div class="faq">
+        <details open>
+          <summary>무료인가요?</summary>
+          <div class="answer"><p>네. MIT 라이선스이고 유료 티어도, 광고도, 업셀도 없습니다. 소스는 <a href="https://github.com/waylake/reel">GitHub</a>에 있습니다.</p></div>
+        </details>
+        <details>
+          <summary>403이 뜨거나 “page needs to be reloaded” 오류가 납니다.</summary>
+          <div class="answer">
+            <p>YouTube 쪽이 바뀐 것입니다. <strong>설정 → 고급 → yt-dlp → 업데이트</strong>를 누르세요. 앱을 다시 켜지 않아도 바로 적용됩니다.</p>
+            <p>Reel은 일시적 오류를 백오프로 재시도하고 실패 시 yt-dlp를 자동 업데이트하지만, 수동 업데이트가 가장 빠릅니다.</p>
+          </div>
+        </details>
+        <details>
+          <summary>macOS가 “확인되지 않은 개발자”라며 앱을 열지 않습니다.</summary>
+          <div class="answer">
+            <p>Reel은 ad-hoc 서명만 되어 있고 Apple 공증은 받지 않았습니다. 응용 프로그램 폴더의 <strong>Reel.app</strong>을 오른쪽 클릭해 <strong>열기</strong>를 한 번 선택하세요. 아니면 Homebrew로 설치하면 격리 문제가 아예 생기지 않습니다.</p>
+          </div>
+        </details>
+        <details>
+          <summary>제 정보를 어디로 보내나요?</summary>
+          <div class="answer">
+            <p>아무 데도 보내지 않습니다. 분석도, 크래시 리포트도, 자체 서버도 없습니다. 클립보드는 링크를 찾기 위해 로컬에서만 읽습니다. 브라우저 쿠키를 켜면 다운로드하는 사이트로만 전달됩니다. 앱의 통신은 업데이트 확인과 다운로드 자체뿐입니다.</p>
+          </div>
+        </details>
+        <details>
+          <summary>4K도 받을 수 있나요?</summary>
+          <div class="answer"><p>원본이 제공한다면 가능합니다. <strong>최고 화질 MP4</strong> 프리셋은 사용 가능한 최고 화질의 영상과 오디오를 받아 ffmpeg로 합칩니다. VP9나 AV1을 못 읽는 편집기와 플레이어를 위해 1080p H.264 프리셋도 있습니다.</p></div>
+        </details>
+        <details>
+          <summary>다운로드가 합법인가요?</summary>
+          <div class="answer"><p>콘텐츠와 거주 지역에 따라 다릅니다. 본인이 소유했거나, 허용된 라이선스로 제공되거나, 현지 법이 허용하는 것만 받으세요. 각 사이트의 약관을 존중해야 합니다. Reel은 DRM을 우회하지 않고 미디어를 호스팅하거나 배포하지 않습니다.</p></div>
+        </details>
+        <details>
+          <summary>파일은 어디에 저장되나요?</summary>
+          <div class="answer"><p>기본값은 <code>~/Movies/Reel</code>입니다. <strong>설정 → 일반</strong>에서 바꿀 수 있습니다. 큐는 <code>~/Library/Application Support/Reel/queue.json</code>에 있습니다.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="close">
+    <div class="wrap">
+      <div>
+        <h2>주소를 입력창에 붙여넣지 마세요.</h2>
+        <p>링크를 복사하고 ⌘V. 그게 전부입니다.</p>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">macOS용 다운로드</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="../icon.png" width="34" height="34" alt="">
+        <p><b>Reel</b>네이티브 macOS 다운로더. 서울에서 <a href="https://waylake.com">WAYLAKE</a>가 만듭니다. MIT.</p>
+      </div>
+      <div>
+        <h3>제품</h3>
+        <ul>
+          <li><a href="#install">설치</a></li>
+          <li><a href="../docs.html">문서</a></li>
+          <li><a class="changelog" href="../changelog.html">변경 기록</a></li>
+          <li><a href="https://github.com/waylake/reel/releases">릴리스</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>프로젝트</h3>
+        <ul>
+          <li><a href="https://github.com/waylake/reel">GitHub</a></li>
+          <li><a href="https://github.com/waylake/reel/issues">이슈</a></li>
+          <li><a href="https://github.com/waylake/reel/blob/main/CONTRIBUTING.md">기여</a></li>
+          <li><a href="https://github.com/waylake/reel/blob/main/SECURITY.md">보안</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>법적 고지</h3>
+        <ul>
+          <li><a href="../privacy.html">개인정보</a></li>
+          <li><a href="../licenses.html">라이선스</a></li>
+          <li><a href="mailto:waylake@waylake.com">waylake@waylake.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>© 2026 WAYLAKE · Reel v<span data-version>1.3.2</span></span>
+      <span>이 사이트에는 쿠키도, 분석도, 외부 요청도 없습니다.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

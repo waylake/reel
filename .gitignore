@@ -55,3 +55,6 @@ updates/
 
 # Claude
 .claude/
+
+# Local site preview
+.preview/

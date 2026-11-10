@@ -1,573 +1,424 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reel · Copy a link, it downloads</title>
-  <meta name="description" content="Reel is a tiny, native macOS menu bar video downloader for YouTube and 1,800+ sites. Copy a link, press ⌘V, done. Free and open source, powered by yt-dlp and ffmpeg.">
-  <meta name="theme-color" content="#0b0d10">
-  <link rel="icon" type="image/png" href="icon.png">
-  <link rel="apple-touch-icon" href="icon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reel — copy a link, press ⌘V. A native macOS downloader.</title>
+<meta name="description" content="Reel is a native macOS menu bar downloader for YouTube and 1,800+ other sites. Copy a link, press ⌘V. Built on yt-dlp and ffmpeg. Free, open source, no accounts, no telemetry.">
+<meta name="theme-color" content="#07080a">
+<link rel="canonical" href="https://reel.waylake.com/">
+<link rel="alternate" hreflang="en" href="https://reel.waylake.com/">
+<link rel="alternate" hreflang="ko" href="https://reel.waylake.com/ko/">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="stylesheet" href="assets/site.css">
 
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Reel · Copy a link, it downloads">
-  <meta property="og:description" content="A tiny, native macOS menu bar downloader for YouTube and 1,800+ sites. Free and open source.">
-  <meta property="og:url" content="https://waylake.github.io/reel/">
-  <meta property="og:image" content="https://waylake.github.io/reel/screenshots/main-window.png">
-  <meta name="twitter:card" content="summary_large_image">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Reel">
+<meta property="og:title" content="Reel — copy a link, press ⌘V.">
+<meta property="og:description" content="A native macOS downloader for YouTube and 1,800+ other sites. yt-dlp and ffmpeg run on your Mac. Free and open source.">
+<meta property="og:url" content="https://reel.waylake.com/">
+<meta property="og:image" content="https://reel.waylake.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reel — copy a link, press ⌘V.">
+<meta name="twitter:description" content="A native macOS downloader for YouTube and 1,800+ other sites. Free and open source.">
+<meta name="twitter:image" content="https://reel.waylake.com/og.png">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --bg: #0b0d10;
-      --bg-2: #111419;
-      --surface: rgba(255, 255, 255, 0.04);
-      --surface-2: rgba(255, 255, 255, 0.07);
-      --border: rgba(255, 255, 255, 0.09);
-      --text: #f2f4f7;
-      --muted: #9aa3ae;
-      --faint: #6b7480;
-      --accent: #2dd4bf;
-      --accent-2: #14b8a6;
-      --accent-ink: #04201c;
-      --glow: rgba(45, 212, 191, 0.22);
-      --shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
-      --radius: 18px;
-      --maxw: 1120px;
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://reel.waylake.com/#app",
+      "name": "Reel",
+      "applicationCategory": "UtilitiesApplication",
+      "applicationSubCategory": "Video downloader",
+      "operatingSystem": "macOS 14.0 or later",
+      "softwareVersion": "1.3.2",
+      "fileSize": "59 MB",
+      "downloadUrl": "https://github.com/waylake/reel/releases/latest/download/Reel.app.zip",
+      "installUrl": "https://github.com/waylake/reel/releases/latest",
+      "softwareHelp": "https://reel.waylake.com/docs",
+      "license": "https://opensource.org/license/mit",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@id": "https://reel.waylake.com/#org" },
+      "sameAs": ["https://github.com/waylake/reel"]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://reel.waylake.com/#org",
+      "name": "WAYLAKE",
+      "url": "https://waylake.com",
+      "email": "waylake@waylake.com"
     }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f7f8fa;
-        --bg-2: #ffffff;
-        --surface: rgba(10, 20, 30, 0.035);
-        --surface-2: rgba(10, 20, 30, 0.06);
-        --border: rgba(10, 20, 30, 0.09);
-        --text: #0d1117;
-        --muted: #4f5966;
-        --faint: #7a8491;
-        --accent: #0d9488;
-        --accent-2: #0f766e;
-        --accent-ink: #ffffff;
-        --glow: rgba(13, 148, 136, 0.16);
-        --shadow: 0 30px 70px -25px rgba(15, 30, 45, 0.35), 0 0 0 1px rgba(10, 20, 30, 0.06);
-      }
-    }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 16px/1.6 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-    a { color: inherit; }
-    img { max-width: 100%; height: auto; display: block; }
-    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
-    kbd {
-      font: 500 0.82em "JetBrains Mono", ui-monospace, monospace;
-      padding: 2px 7px; border-radius: 6px;
-      background: var(--surface-2); border: 1px solid var(--border);
-      border-bottom-width: 2px;
-    }
-
-    /* ---------- Nav ---------- */
-    nav {
-      position: sticky; top: 0; z-index: 10;
-      backdrop-filter: saturate(160%) blur(16px);
-      -webkit-backdrop-filter: saturate(160%) blur(16px);
-      background: color-mix(in srgb, var(--bg) 72%, transparent);
-      border-bottom: 1px solid var(--border);
-    }
-    nav .wrap { display: flex; align-items: center; gap: 28px; height: 60px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; font-size: 17px; }
-    .brand img { width: 28px; height: 28px; border-radius: 7px; }
-    .nav-links { display: flex; gap: 22px; margin-left: auto; font-size: 14px; }
-    .nav-links a { text-decoration: none; color: var(--muted); transition: color .15s; }
-    .nav-links a:hover { color: var(--text); }
-    @media (max-width: 720px) { .nav-links a.hide-sm { display: none; } }
-
-    /* ---------- Buttons ---------- */
-    .btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 13px 22px; border-radius: 12px;
-      font-weight: 600; font-size: 15px; text-decoration: none;
-      transition: transform .15s ease, box-shadow .2s ease, background .2s;
-      white-space: nowrap;
-    }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-primary {
-      background: linear-gradient(180deg, var(--accent), var(--accent-2));
-      color: var(--accent-ink);
-      box-shadow: 0 10px 30px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,.25);
-    }
-    .btn-primary:hover { box-shadow: 0 14px 40px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,.25); }
-    .btn-ghost { background: var(--surface); border: 1px solid var(--border); }
-    .btn-ghost:hover { background: var(--surface-2); }
-    .btn svg { width: 18px; height: 18px; flex: none; }
-
-    /* ---------- Hero ---------- */
-    .hero { position: relative; padding: 96px 0 40px; text-align: center; }
-    .hero::before {
-      content: ""; position: absolute; inset: -200px 0 auto; height: 760px; z-index: -1;
-      background:
-        radial-gradient(600px 320px at 50% 30%, var(--glow), transparent 70%),
-        radial-gradient(500px 260px at 20% 10%, rgba(99, 102, 241, 0.10), transparent 70%),
-        radial-gradient(500px 260px at 80% 15%, rgba(236, 72, 153, 0.08), transparent 70%);
-    }
-    .app-icon {
-      width: 108px; height: 108px; margin: 0 auto 28px; border-radius: 24px;
-      box-shadow: 0 20px 50px -12px var(--glow), 0 0 0 1px var(--border);
-    }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 13px; color: var(--muted);
-      padding: 6px 12px; border-radius: 999px;
-      background: var(--surface); border: 1px solid var(--border);
-      margin-bottom: 22px; text-decoration: none;
-    }
-    .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-    h1 {
-      font-size: clamp(40px, 7vw, 76px); line-height: 1.02; letter-spacing: -0.035em;
-      font-weight: 800; margin: 0 0 20px;
-    }
-    h1 .grad {
-      background: linear-gradient(120deg, var(--accent) 10%, #818cf8 60%, #f472b6 100%);
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-    }
-    .lede { font-size: clamp(17px, 2.1vw, 20px); color: var(--muted); max-width: 640px; margin: 0 auto 34px; }
-    .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .meta { margin-top: 18px; font-size: 13px; color: var(--faint); }
-    .meta span + span::before { content: "·"; margin: 0 8px; }
-
-    .shot-hero { margin: 64px auto 0; max-width: 1000px; position: relative; }
-    .shot-hero img { width: 100%; }   /* PNG에 창 그림자가 이미 포함됨 */
-    .shot-hero::after {
-      content: ""; position: absolute; inset: 10% 8% -6%; z-index: -1;
-      background: radial-gradient(closest-side, var(--glow), transparent); filter: blur(40px);
-    }
-
-    /* ---------- Sections ---------- */
-    section { padding: 110px 0; }
-    .kicker { color: var(--accent); font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 12px; }
-    h2 { font-size: clamp(30px, 4.2vw, 46px); line-height: 1.1; letter-spacing: -0.028em; margin: 0 0 16px; font-weight: 800; }
-    .sub { color: var(--muted); font-size: 18px; max-width: 620px; margin: 0; }
-    .center { text-align: center; }
-    .center .sub { margin: 0 auto; }
-
-    /* Steps */
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 56px; counter-reset: step; }
-    .step {
-      position: relative; text-align: left; padding: 28px; border-radius: var(--radius);
-      background: var(--surface); border: 1px solid var(--border);
-    }
-    .step::before {
-      counter-increment: step; content: counter(step);
-      display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
-      font-weight: 700; font-size: 15px; margin-bottom: 18px;
-      background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent);
-    }
-    .step h3 { margin: 0 0 6px; font-size: 19px; letter-spacing: -0.01em; }
-    .step p { margin: 0; color: var(--muted); font-size: 15px; }
-    @media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
-
-    /* Features */
-    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 56px; }
-    .feature {
-      min-width: 0; padding: 26px; border-radius: var(--radius);
-      background: var(--surface); border: 1px solid var(--border);
-      transition: background .2s, border-color .2s, transform .2s;
-    }
-    .feature:hover { background: var(--surface-2); transform: translateY(-2px); }
-    .feature .ic {
-      width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 16px;
-      background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent);
-    }
-    .feature .ic svg { width: 21px; height: 21px; }
-    .feature h3 { margin: 0 0 6px; font-size: 17px; letter-spacing: -0.01em; }
-    .feature p { margin: 0; color: var(--muted); font-size: 14.5px; }
-    @media (max-width: 920px) { .features { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .features { grid-template-columns: 1fr; } }
-
-    /* Showcase */
-    .showcase { display: grid; grid-template-columns: 1fr 1.1fr; gap: 64px; align-items: center; margin-top: 72px; }
-    .showcase.flip { grid-template-columns: 1.1fr 1fr; }
-    .showcase.flip .copy { order: 2; }
-    .showcase .copy h3 { font-size: 30px; letter-spacing: -0.025em; line-height: 1.15; margin: 0 0 14px; }
-    .showcase .copy p { color: var(--muted); margin: 0 0 18px; font-size: 17px; }
-    .showcase ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-    .showcase li { display: flex; gap: 10px; color: var(--muted); font-size: 15px; }
-    .showcase li::before { content: ""; flex: none; width: 18px; height: 18px; margin-top: 3px; border-radius: 50%;
-      background: color-mix(in srgb, var(--accent) 18%, transparent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232dd4bf' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/11px no-repeat; }
-    .showcase > * { min-width: 0; }
-    .showcase .media { display: flex; justify-content: center; position: relative; }
-    .showcase .media img.framed { border-radius: 14px; box-shadow: var(--shadow); }
-    .showcase .media::after {
-      content: ""; position: absolute; inset: 15%; z-index: -1;
-      background: radial-gradient(closest-side, var(--glow), transparent); filter: blur(50px);
-    }
-    .media.menubar img { max-width: 380px; width: 100%; }
-    .settings-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; width: 100%; max-width: 560px; }
-    .settings-pair img { width: 100%; }
-    .settings-pair img:nth-child(2) { margin-top: 48px; }
-    @media (max-width: 860px) {
-      .showcase, .showcase.flip { grid-template-columns: 1fr; gap: 36px; }
-      .showcase.flip .copy { order: 0; }
-    }
-
-    /* Install */
-    .install {
-      margin-top: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
-    }
-    .card {
-      min-width: 0; padding: 30px; border-radius: var(--radius);
-      background: var(--surface); border: 1px solid var(--border);
-    }
-    .card h3 { margin: 0 0 6px; font-size: 19px; }
-    .card p { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
-    .card ol { margin: 0 0 22px; padding-left: 20px; color: var(--muted); font-size: 15px; display: grid; gap: 6px; }
-    .code {
-      position: relative; display: flex; align-items: center; gap: 12px;
-      font: 13.5px/1.6 "JetBrains Mono", ui-monospace, monospace;
-      background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px;
-      padding: 12px 14px; overflow-x: auto;
-    }
-    .code pre { margin: 0; flex: 1; white-space: pre; }
-    .code .p { color: var(--faint); user-select: none; }
-    .copy-btn {
-      flex: none; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted);
-      font: 500 12px Inter, sans-serif; padding: 6px 10px; border-radius: 8px; cursor: pointer;
-      align-self: flex-start;
-    }
-    .copy-btn:hover { color: var(--text); }
-    .note { font-size: 13px; color: var(--faint); margin-top: 12px; }
-    @media (max-width: 820px) { .install { grid-template-columns: 1fr; } }
-
-    /* FAQ */
-    .faq { max-width: 760px; margin: 48px auto 0; display: grid; gap: 10px; }
-    details {
-      border-radius: 14px; background: var(--surface); border: 1px solid var(--border);
-      padding: 4px 22px;
-    }
-    summary {
-      cursor: pointer; list-style: none; padding: 16px 0; font-weight: 600; font-size: 16px;
-      display: flex; justify-content: space-between; align-items: center; gap: 16px;
-    }
-    summary::-webkit-details-marker { display: none; }
-    summary::after { content: "+"; font-weight: 400; font-size: 22px; color: var(--faint); transition: transform .2s; }
-    details[open] summary::after { transform: rotate(45deg); }
-    details p { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
-
-    /* Final CTA */
-    .final {
-      text-align: center; padding: 80px 32px; border-radius: 28px; margin: 0 0 110px;
-      background:
-        radial-gradient(500px 220px at 50% 0%, var(--glow), transparent 70%),
-        var(--surface);
-      border: 1px solid var(--border);
-    }
-    .final img { width: 72px; height: 72px; border-radius: 16px; margin: 0 auto 22px; }
-
-    footer { border-top: 1px solid var(--border); padding: 32px 0 48px; color: var(--faint); font-size: 13.5px; }
-    footer .wrap { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
-    footer nav-links, footer .links { display: flex; gap: 18px; flex-wrap: wrap; }
-    footer a { text-decoration: none; color: var(--muted); }
-    footer a:hover { color: var(--text); }
-
-    /* Reveal on scroll */
-    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
-    .reveal.in { opacity: 1; transform: none; }
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .reveal { opacity: 1; transform: none; transition: none; }
-      .btn, .feature { transition: none; }
-    }
-  </style>
+  ]
+}
+</script>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 
-<nav>
+<header class="nav">
   <div class="wrap">
-    <a class="brand" href="#top"><img src="icon.png" alt="">Reel</a>
-    <div class="nav-links">
-      <a href="#how" class="hide-sm">How it works</a>
-      <a href="#features" class="hide-sm">Features</a>
+    <a class="brand" href="./"><img src="icon.png" width="22" height="22" alt="">Reel</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a class="opt" href="#how">How it works</a>
       <a href="#install">Install</a>
+      <a href="docs.html">Docs</a>
+      <a class="changelog" href="changelog.html">Changelog</a>
       <a href="https://github.com/waylake/reel">GitHub</a>
-    </div>
-  </div>
-</nav>
-
-<header class="hero" id="top">
-  <div class="wrap">
-    <img class="app-icon" src="icon.png" alt="Reel app icon">
-    <a class="eyebrow" href="https://github.com/waylake/reel/releases/latest">
-      <span class="dot"></span><span id="ver-eyebrow">Free &amp; open source</span>
-    </a>
-    <h1>Copy a link.<br><span class="grad">It downloads.</span></h1>
-    <p class="lede">Reel is a tiny, native macOS menu bar downloader for YouTube and 1,800+ other sites. No text fields, no format dialogs. Copy, press <kbd>⌘</kbd> <kbd>V</kbd>, done.</p>
-    <div class="cta">
-      <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.38-3.68zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.01.61-2.66 1.37-.58.67-1.09 1.75-.95 2.79 1.01.08 2.04-.51 2.67-1.27z"/></svg>
-        <span>Download for macOS</span>
-      </a>
-      <a class="btn btn-ghost" href="https://github.com/waylake/reel">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a10.9 10.9 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
-        <span>View on GitHub</span>
-      </a>
-    </div>
-    <div class="meta"><span id="ver-meta">Latest release</span><span>macOS 14+</span><span>Apple Silicon &amp; Intel</span><span>MIT</span></div>
-
-    <div class="shot-hero reveal">
-      <img src="screenshots/main-window.png" width="1600" height="1052" alt="Reel main window showing downloads as thumbnail cards with live progress">
-    </div>
+      <span class="lang"><a href="./" aria-current="true">EN</a><span class="slash" aria-hidden="true">/</span><a href="ko/">KO</a></span>
+    </nav>
   </div>
 </header>
 
-<section id="how">
-  <div class="wrap center">
-    <div class="kicker">How it works</div>
-    <h2>Three steps. No setup required.</h2>
-    <p class="sub">Reel lives in your menu bar and watches for media links. Adding one takes a single keystroke.</p>
-    <div class="steps">
-      <div class="step reveal">
-        <h3>Copy a link</h3>
-        <p>Copy any video link in your browser with <kbd>⌘</kbd> <kbd>C</kbd>. Reel notices it right away.</p>
+<main id="main">
+  <section class="hero">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="kicker">macOS menu bar app · Free and open source</p>
+        <h1>Copy a link.<br>Press <span class="key">⌘</span><span class="key">V</span></h1>
+        <p class="lede">Reel is a native downloader for YouTube and 1,800+ other sites. It runs yt-dlp and ffmpeg on your Mac — no Electron, no account, no telemetry.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">Download for macOS
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 13h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <button class="copyfield" type="button" data-copy="brew install --cask waylake/tap/reel">
+            <code>brew install --cask waylake/tap/reel</code>
+            <span class="copy-hint">Copy</span>
+          </button>
+        </div>
+        <p class="stamp">
+          <span>v<span data-version>1.3.2</span></span>
+          <span><span data-size>59 MB</span></span>
+          <span>macOS 14 Sonoma or later</span>
+          <span>Apple silicon &amp; Intel</span>
+        </p>
       </div>
-      <div class="step reveal">
-        <h3>Press ⌘V in Reel</h3>
-        <p>Switch to Reel and press <kbd>⌘</kbd> <kbd>V</kbd>, or click <strong>Add</strong> in the menu bar popover. You can also drag links onto the window.</p>
-      </div>
-      <div class="step reveal">
-        <h3>It's on your Mac</h3>
-        <p>Reel downloads the file in your default format and notifies you when it's done.</p>
-      </div>
+      <figure class="hero-shot">
+        <img src="screenshots/main-window.png" width="1600" height="1052" fetchpriority="high"
+             alt="Reel's main window: a grid of downloads shown as thumbnail cards with live progress, speed and time remaining.">
+      </figure>
+    </div>
+  </section>
+
+  <div class="facts">
+    <div class="wrap">
+      <ul>
+        <li>Native SwiftUI</li>
+        <li>Six parallel downloads</li>
+        <li>Playlists &amp; channels</li>
+        <li>SponsorBlock</li>
+        <li>Signed in-app updates</li>
+        <li>MIT</li>
+      </ul>
     </div>
   </div>
-</section>
 
-<section id="features" style="padding-top: 0">
-  <div class="wrap">
-    <div class="center">
-      <div class="kicker">Features</div>
-      <h2>Small app. Serious engine.</h2>
-      <p class="sub">Under the hood is <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a>, the most capable downloader there is. Reel makes it feel like a native Mac app.</p>
-    </div>
-    <div class="features">
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></div>
-        <h3>Clipboard-first</h3>
-        <p>No URL fields to paste into. Reel picks up the link you copied, and you can drag in a whole <code>.txt</code> list.</p>
+  <section class="sec" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">01 / How it works</div>
+        <div class="sec-title">
+          <h2>Three steps, one shortcut.</h2>
+          <p>No URL field to paste into. No format dialog to dismiss. Reel works from the link you already copied.</p>
+        </div>
       </div>
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-        <h3>1,800+ sites</h3>
-        <p>YouTube, Vimeo, TikTok, X, Instagram, Reddit, SoundCloud and every other site yt-dlp supports.</p>
-      </div>
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
-        <h3>Video or audio</h3>
-        <p>Best quality MP4, 1080p for compatibility, MP3, M4A, or the original file untouched.</p>
-      </div>
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div>
-        <h3>Playlists</h3>
-        <p>Grab a single video or a whole playlist, with a limit you choose.</p>
-      </div>
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-        <h3>Parallel &amp; resumable</h3>
-        <p>Run up to 6 downloads at once, pause and resume them, and pick up where you left off after a restart.</p>
-      </div>
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <h3>Subtitles &amp; chapters</h3>
-        <p>Embed subtitles (including auto-generated ones), chapters, metadata and thumbnails.</p>
-      </div>
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/><path d="M15 3l6 6M21 3l-6 6"/></svg></div>
-        <h3>Skip the sponsors</h3>
-        <p>SponsorBlock removes sponsor and self-promo segments automatically.</p>
-      </div>
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></div>
-        <h3>Self-healing</h3>
-        <p>Reel retries temporary YouTube errors and updates yt-dlp from inside the app, with no restart needed.</p>
-      </div>
-      <div class="feature reveal">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-        <h3>Private by design</h3>
-        <p>No accounts, analytics or telemetry. Everything stays on your Mac.</p>
-      </div>
-    </div>
 
-    <div class="showcase">
-      <div class="copy reveal">
-        <div class="kicker">Menu bar</div>
-        <h3>Always one click away.</h3>
-        <p>The popover shows what's downloading and what just finished. Every item gets its thumbnail.</p>
-        <ul>
-          <li>Live progress, speed and time remaining</li>
-          <li>Click a finished file to open it</li>
-          <li>Hover to pause, resume or reveal in Finder</li>
-        </ul>
-      </div>
-      <div class="media menubar reveal">
-        <img class="raw" src="screenshots/menu-bar.png" width="530" height="640" loading="lazy" alt="Reel menu bar popover with active downloads and recent files">
-      </div>
-    </div>
-
-    <div class="showcase flip">
-      <div class="copy reveal">
-        <div class="kicker">Settings</div>
-        <h3>Only what matters.</h3>
-        <p>Choose a save folder and a default format and you're done. The power options wait one tab away.</p>
-        <ul>
-          <li>Subtitles, embeds, SponsorBlock and file names</li>
-          <li>Browser login cookies for age-restricted videos</li>
-          <li>Concurrency, low power mode and auto cleanup</li>
-        </ul>
-      </div>
-      <div class="media reveal">
-        <div class="settings-pair">
-          <img class="framed" src="screenshots/settings-general.png" width="960" height="776" loading="lazy" alt="Settings: General tab">
-          <img class="framed" src="screenshots/settings-downloads.png" width="960" height="1056" loading="lazy" alt="Settings: Downloads tab">
+      <div class="steps">
+        <div class="step">
+          <div class="step-mark"><span class="n">01</span><span class="key">⌘</span><span class="key">C</span></div>
+          <div class="step-body">
+            <h3>Copy the link</h3>
+            <p>Any video or audio page: YouTube, Vimeo, Twitch, TikTok, SoundCloud, and the other 1,800 sites yt-dlp knows.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-mark"><span class="n">02</span><span class="key">⌘</span><span class="key">V</span></div>
+          <div class="step-body">
+            <h3>Paste it in Reel</h3>
+            <p>Reel lives in the menu bar. It reads the clipboard on your Mac, sees the link, and offers it in the popover — ⌘V adds it to the queue. You can also drag a link or a <code>.txt</code> list onto the window.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-mark"><span class="n">03</span><span class="chip">~/Movies/Reel</span></div>
+          <div class="step-body">
+            <h3>Pick a preset once</h3>
+            <p>Best quality MP4, 1080p H.264, MP3, M4A, or the original file untouched. Every download uses it until you change it. Files land where you point them.</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="install" style="padding-top: 0">
-  <div class="wrap">
-    <div class="center">
-      <div class="kicker">Install</div>
-      <h2>Up and running in a minute.</h2>
-      <p class="sub">Requires macOS 14 Sonoma or later. Release builds already include yt-dlp and ffmpeg.</p>
-    </div>
-    <div class="install">
-      <div class="card reveal">
-        <h3>Download the app</h3>
-        <p>Get the latest release from GitHub.</p>
-        <ol>
-          <li>Download <strong>Reel.app.zip</strong> and unzip it.</li>
-          <li>Move <strong>Reel.app</strong> to your Applications folder.</li>
-          <li>The first time you launch it, <strong>right-click → Open</strong>.</li>
-        </ol>
-        <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">Download Reel.app.zip</a>
-        <p class="note">Reel isn't notarized yet. If macOS blocks it, run this once:</p>
-        <div class="code"><pre><span class="p">$ </span>xattr -dr com.apple.quarantine /Applications/Reel.app</pre><button class="copy-btn" data-copy="xattr -dr com.apple.quarantine /Applications/Reel.app">Copy</button></div>
+  <section class="sec" id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">02 / What it does</div>
+        <div class="sec-title">
+          <h2>A small app around a serious engine.</h2>
+          <p>Reel does not implement any extraction itself. yt-dlp does that work, and ffmpeg merges and converts. Reel is the native part: the queue, the clipboard, the cards, the update path.</p>
+        </div>
       </div>
-      <div class="card reveal">
-        <h3>Build from source</h3>
-        <p>Requires Xcode 16 and Homebrew.</p>
-        <div class="code"><pre><span class="p">$ </span>brew install xcodegen yt-dlp ffmpeg
-<span class="p">$ </span>git clone https://github.com/waylake/reel.git
-<span class="p">$ </span>cd reel &amp;&amp; xcodegen generate
-<span class="p">$ </span>open Reel.xcodeproj</pre><button class="copy-btn" data-copy="brew install xcodegen yt-dlp ffmpeg
+
+      <dl class="rows">
+        <div class="row">
+          <dt>Clipboard</dt>
+          <dd>Reel reads the clipboard locally to spot media links. What it finds shows up in the menu bar; nothing is uploaded. You can turn the detection off in Settings.</dd>
+        </div>
+        <div class="row">
+          <dt>Presets</dt>
+          <dd><strong>Best quality MP4</strong>, 1080p H.264 for compatibility, MP3, M4A, or the original file with no re-encoding.</dd>
+        </div>
+        <div class="row">
+          <dt>Playlists</dt>
+          <dd>Queue a playlist or an entire channel, with an item limit so a 900-video channel does not fill the disk.</dd>
+        </div>
+        <div class="row">
+          <dt>Rich files</dt>
+          <dd>Embed subtitles, including auto-generated ones, plus chapters, metadata and thumbnails. Skip sponsor segments with SponsorBlock.</dd>
+        </div>
+        <div class="row">
+          <dt>Engine</dt>
+          <dd>yt-dlp and ffmpeg ship with the app. When a site changes, update the engine in place — no app restart, no terminal. Transient YouTube errors are retried with backoff.</dd>
+        </div>
+        <div class="row">
+          <dt>Sign-in</dt>
+          <dd>Members-only or age-restricted video? Pass cookies from Safari, Chrome or Firefox. They stay on your Mac.</dd>
+        </div>
+        <div class="row">
+          <dt>Queue</dt>
+          <dd>Up to six downloads at once. Quit whenever you like; unfinished items resume on the next launch.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec" id="screens">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">03 / Screens</div>
+        <div class="sec-title">
+          <h2>Menu bar, window, and out of the way.</h2>
+          <p>Two surfaces: a popover for what is happening now, and a window when you want to look at the queue.</p>
+        </div>
+      </div>
+
+      <div class="shots">
+        <figure class="shot">
+          <img src="screenshots/menu-bar.png" width="530" height="640" loading="lazy"
+               alt="Reel's menu bar popover: active downloads with progress bars and a list of recent files.">
+          <figcaption><b>Menu bar</b>Active downloads and recent files, one click from anywhere.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="screenshots/settings-downloads.png" width="960" height="1056" loading="lazy"
+               alt="Reel settings: playlists, subtitles, embedding options and SponsorBlock.">
+          <figcaption><b>Settings</b>Presets, subtitles, embeds and SponsorBlock — set once.</figcaption>
+        </figure>
+      </div>
+      <p class="gallery-note">The interface is in Korean today. English and other languages are planned.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="limits">
+    <div class="wrap">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="sec-num">04 / Limits</div>
+          <div class="sec-title">
+            <h2>What Reel does not do</h2>
+            <p>A downloader that promises everything is usually lying about something. This is the honest list.</p>
+          </div>
+        </div>
+        <ul class="negatives">
+            <li><span><b>No account.</b> Nothing to sign up for, nothing to sign in to, no sync.</span></li>
+            <li><span><b>No telemetry.</b> No analytics, no crash reports, no ads. The only network call Reel makes on its own is the update check.</span></li>
+            <li><span><b>No DRM circumvention.</b> If a service encrypts the stream, Reel cannot take it. This is a downloader, not a key.</span></li>
+            <li><span><b>No browser extension.</b> Copy from any browser instead — that is the whole interface.</span></li>
+            <li><span><b>No invented numbers.</b> “1,800+ sites” is yt-dlp's extractor list, not a marketing figure. Some of those sites will be broken on any given day.</span></li>
+          </ul>
+        <p class="panel-foot">All extraction is yt-dlp's work, under the Unlicense. Reel is a thin, native front end.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="install">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">05 / Install</div>
+        <div class="sec-title">
+          <h2>Up and running in a minute.</h2>
+          <p>macOS 14 Sonoma or later, Apple silicon or Intel. The app bundles its own yt-dlp and ffmpeg, so there is nothing else to install.</p>
+        </div>
+      </div>
+
+      <div class="installer">
+        <div class="tablist" role="tablist" aria-label="Install methods">
+          <button class="tab" role="tab" id="tab-dmg" aria-controls="panel-dmg" aria-selected="true" type="button">Download</button>
+          <button class="tab" role="tab" id="tab-brew" aria-controls="panel-brew" aria-selected="false" type="button">Homebrew</button>
+          <button class="tab" role="tab" id="tab-src" aria-controls="panel-src" aria-selected="false" type="button">Build from source</button>
+        </div>
+
+        <div class="tabpanel" id="panel-dmg" role="tabpanel" aria-labelledby="tab-dmg">
+          <div class="panel-main">
+            <p>Download the zip, unzip it, and move <strong>Reel.app</strong> to your Applications folder.</p>
+            <div class="btn-row">
+              <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">Download Reel.app.zip</a>
+            </div>
+          </div>
+          <div class="note">
+            <span class="note-mark">NOTE</span>
+            <span>Reel is not notarized yet. On first launch macOS will refuse to open it: <b>right-click Reel.app → Open</b>, once. After that it launches normally. The Homebrew route skips this prompt.</span>
+          </div>
+        </div>
+
+        <div class="tabpanel" id="panel-brew" role="tabpanel" aria-labelledby="tab-brew" hidden>
+          <div class="panel-main">
+            <p>Homebrew installs the same app and removes the quarantine prompt.</p>
+            <div class="field">
+              <pre><span class="prompt">$ </span>brew install --cask waylake/tap/reel</pre>
+              <button class="copyfield" type="button" data-copy="brew install --cask waylake/tap/reel"><span class="copy-hint">Copy</span></button>
+            </div>
+          </div>
+          <div class="note">
+            <span class="note-mark">TRUST</span>
+            <span>Homebrew 6.0 requires explicit trust for third-party taps. A fully qualified cask name trusts only this cask, not the whole tap.</span>
+          </div>
+        </div>
+
+        <div class="tabpanel" id="panel-src" role="tabpanel" aria-labelledby="tab-src" hidden>
+          <div class="panel-main">
+          <p>Build the app yourself, with or without the bundled engine.</p>
+          <div class="field">
+            <pre><span class="prompt">$ </span>brew install xcodegen yt-dlp ffmpeg
+<span class="prompt">$ </span>git clone https://github.com/waylake/reel.git
+<span class="prompt">$ </span>cd reel &amp;&amp; xcodegen generate
+<span class="prompt">$ </span>open Reel.xcodeproj</pre>
+            <button class="copyfield" type="button" data-copy="brew install xcodegen yt-dlp ffmpeg
 git clone https://github.com/waylake/reel.git
-cd reel && xcodegen generate
-open Reel.xcodeproj">Copy</button></div>
-        <p class="note">Contributions are welcome. See <a href="https://github.com/waylake/reel/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
+cd reel &amp;&amp; xcodegen generate
+open Reel.xcodeproj"><span class="copy-hint">Copy</span></button>
+          </div>
+          <p>Contributions are welcome. Read <a href="https://github.com/waylake/reel/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> first.</p>
+          </div>
+          <div class="note">
+            <span class="note-mark">NEEDS</span>
+            <span>Xcode 16 or later, XcodeGen, and Homebrew. No Apple developer account is required for a local build.</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="faq" style="padding-top: 0">
+  <section class="sec" id="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="sec-num">06 / Questions</div>
+        <div class="sec-title">
+          <h2>Answers, without the sales pitch.</h2>
+          <p>Everything below is also in the <a class="head-link" href="docs.html">docs</a>, with the exact error messages.</p>
+        </div>
+      </div>
+
+      <div class="faq">
+        <details open>
+          <summary>Is Reel free?</summary>
+          <div class="answer"><p>Yes. MIT licensed, no paid tier, no ads, no upsell. The source is on <a href="https://github.com/waylake/reel">GitHub</a>.</p></div>
+        </details>
+        <details>
+          <summary>A download failed with 403, or “the page needs to be reloaded”.</summary>
+          <div class="answer">
+            <p>YouTube changed something. Open <strong>Settings → Advanced → yt-dlp → Update</strong>. The new engine takes effect immediately, without restarting the app.</p>
+            <p>Reel already retries transient errors with backoff and updates yt-dlp when a run fails, but a manual update is the fastest path.</p>
+          </div>
+        </details>
+        <details>
+          <summary>macOS says the app cannot be opened because it is from an unidentified developer.</summary>
+          <div class="answer">
+            <p>Reel is signed ad-hoc, not notarized by Apple. Right-click <strong>Reel.app</strong> in Applications and choose <strong>Open</strong> — once. Or install with Homebrew, which avoids the quarantine prompt entirely.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does Reel upload anything about me?</summary>
+          <div class="answer">
+            <p>No. There is no analytics, no crash reporting and no server of ours. The clipboard is read locally to find links. Browser cookies, if you enable them, go only to the site you are downloading from. The app's own network calls are the update check and the download itself.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Can it download 4K?</summary>
+          <div class="answer"><p>Yes, when the source offers it. The <strong>Best quality MP4</strong> preset takes the highest available video and audio and merges them with ffmpeg. 1080p H.264 is there for editors and older players that choke on VP9 or AV1.</p></div>
+        </details>
+        <details>
+          <summary>Is downloading videos legal?</summary>
+          <div class="answer"><p>It depends on the content and where you live. Download what you own, what is offered under a licence that allows it, or what your local law permits. Respect each site's terms. Reel does not bypass DRM and does not host or distribute any media.</p></div>
+        </details>
+        <details>
+          <summary>Where do my files go?</summary>
+          <div class="answer"><p><code>~/Movies/Reel</code> by default. Change it in <strong>Settings → General</strong>. The queue lives in <code>~/Library/Application Support/Reel/queue.json</code>.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="close">
+    <div class="wrap">
+      <div>
+        <h2>Stop pasting URLs into boxes.</h2>
+        <p>Copy a link. Press ⌘V. That is the entire workflow.</p>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">Download for macOS</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
   <div class="wrap">
-    <div class="center">
-      <div class="kicker">FAQ</div>
-      <h2>Questions, answered.</h2>
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="icon.png" width="34" height="34" alt="">
+        <p><b>Reel</b>A native macOS downloader. Made by <a href="https://waylake.com">WAYLAKE</a> in Seoul. MIT licensed.</p>
+      </div>
+      <div>
+        <h3>Product</h3>
+        <ul>
+          <li><a href="#install">Install</a></li>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a class="changelog" href="changelog.html">Changelog</a></li>
+          <li><a href="https://github.com/waylake/reel/releases">Releases</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Project</h3>
+        <ul>
+          <li><a href="https://github.com/waylake/reel">GitHub</a></li>
+          <li><a href="https://github.com/waylake/reel/issues">Issues</a></li>
+          <li><a href="https://github.com/waylake/reel/blob/main/CONTRIBUTING.md">Contributing</a></li>
+          <li><a href="https://github.com/waylake/reel/blob/main/SECURITY.md">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="licenses.html">Licenses</a></li>
+          <li><a href="mailto:waylake@waylake.com">waylake@waylake.com</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="faq">
-      <details>
-        <summary>Is Reel free?</summary>
-        <p>Yes. Reel is free and open source under the MIT license, with no ads, subscriptions or in-app purchases.</p>
-      </details>
-      <details>
-        <summary>A download suddenly fails with "403" or "page needs to be reloaded".</summary>
-        <p>YouTube changes often. Open <strong>Settings → Advanced → yt-dlp → Update</strong>. The new version takes effect right away. Reel also retries temporary errors and updates yt-dlp automatically.</p>
-      </details>
-      <details>
-        <summary>How do I download age-restricted or members-only videos?</summary>
-        <p>In <strong>Settings → Downloads → Login cookies</strong>, choose the browser you're signed in with (Safari, Chrome or Firefox). Reel passes the cookies to yt-dlp locally. They never leave your Mac.</p>
-      </details>
-      <details>
-        <summary>Where do my files go?</summary>
-        <p>By default they go to <code>~/Movies/Reel</code>. You can choose any folder in <strong>Settings → General</strong>.</p>
-      </details>
-      <details>
-        <summary>Does Reel collect any data?</summary>
-        <p>No. Reel has no analytics, telemetry or crash reporting. It only checks GitHub for app updates. See the <a href="https://github.com/waylake/reel/blob/main/PRIVACY.md">privacy policy</a>.</p>
-      </details>
-      <details>
-        <summary>Is downloading videos legal?</summary>
-        <p>It depends on the content and where you live. Download only what you have the right to download, and respect each site's terms of service.</p>
-      </details>
-    </div>
-  </div>
-</section>
-
-<div class="wrap">
-  <div class="final reveal">
-    <img src="icon.png" alt="">
-    <h2>Stop pasting URLs into boxes.</h2>
-    <p class="sub" style="margin: 0 auto 30px">Copy a link and let Reel do the rest.</p>
-    <div class="cta">
-      <a class="btn btn-primary" href="https://github.com/waylake/reel/releases/latest/download/Reel.app.zip">Download for macOS</a>
-      <a class="btn btn-ghost" href="https://github.com/waylake/reel">Star on GitHub</a>
-    </div>
-  </div>
-</div>
-
-<footer>
-  <div class="wrap">
-    <div>© 2026 waylake · MIT License · Powered by <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> &amp; <a href="https://ffmpeg.org">FFmpeg</a></div>
-    <div class="links">
-      <a href="https://github.com/waylake/reel/releases">Releases</a>
-      <a href="https://github.com/waylake/reel/blob/main/CONTRIBUTING.md">Contributing</a>
-      <a href="https://github.com/waylake/reel/blob/main/PRIVACY.md">Privacy</a>
-      <a href="https://github.com/waylake/reel/issues">Report an issue</a>
+    <div class="foot-base">
+      <span>© 2026 WAYLAKE · Reel v<span data-version>1.3.2</span></span>
+      <span>This site has no cookies, no analytics, and loads nothing from a third party.</span>
     </div>
   </div>
 </footer>
 
-<script>
-  // Copy buttons
-  document.querySelectorAll('.copy-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var text = btn.getAttribute('data-copy');
-      var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); };
-      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, function () {}); }
-    });
-  });
-
-  // Reveal on scroll
-  var els = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { rootMargin: '0px 0px -8% 0px' });
-    els.forEach(function (el) { io.observe(el); });
-  } else {
-    els.forEach(function (el) { el.classList.add('in'); });
-  }
-
-  // Latest version from GitHub
-  fetch('https://api.github.com/repos/waylake/reel/releases/latest')
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (d) {
-      if (!d || !d.tag_name) return;
-      document.getElementById('ver-meta').textContent = d.tag_name;
-      document.getElementById('ver-eyebrow').textContent = d.tag_name + ' is out · Free & open source';
-    })
-    .catch(function () {});
-</script>
+<script src="assets/site.js" defer></script>
 </body>
 </html>

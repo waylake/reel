@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — Reel</title>
+<meta name="description" content="Reel's privacy policy: no analytics, no telemetry, no account. What the app stores on your Mac, and the two network calls it makes.">
+<meta name="theme-color" content="#07080a">
+<link rel="canonical" href="https://reel.waylake.com/privacy">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="icon.png" width="22" height="22" alt="">Reel</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a class="opt" href="./#how">How it works</a>
+      <a href="./#install">Install</a>
+      <a href="docs.html">Docs</a>
+      <a class="changelog" href="changelog.html">Changelog</a>
+      <a href="https://github.com/waylake/reel">GitHub</a>
+      <span class="lang"><a href="./" aria-current="true">EN</a><span class="slash" aria-hidden="true">/</span><a href="ko/">KO</a></span>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <div class="doc-head">
+      <p class="kicker">Privacy</p>
+      <div>
+        <h1>Nothing leaves your Mac unless you ask it to.</h1>
+        <p>Last updated 10 November 2026. This policy covers the Reel app and this website, and it is short on purpose.</p>
+      </div>
+    </div>
+
+    <div class="doc-body">
+      <nav class="doc-nav" aria-label="On this page">
+        <a href="#app">The app</a>
+        <a href="#stored">What it stores</a>
+        <a href="#network">Network calls</a>
+        <a href="#site">This website</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="prose">
+        <h2 id="app">The app</h2>
+        <p>Reel has no analytics, no telemetry, no crash reporting, no advertising and no user accounts. There is no Reel server: we cannot see your downloads, your links or your cookies, because nothing is sent to us.</p>
+
+        <h2 id="stored">What it stores on your Mac</h2>
+        <ul>
+          <li><strong>Queue</strong> — <code>~/Library/Application Support/Reel/queue.json</code>. Titles, URLs, progress and output paths.</li>
+          <li><strong>Settings</strong> — macOS UserDefaults, under <code>com.waylake.reel</code>.</li>
+          <li><strong>Updated engine</strong> — <code>~/Library/Application Support/Reel/bin/</code>, if you update yt-dlp from the app.</li>
+          <li><strong>Clipboard</strong> — read in memory to detect media links. The text is never written to disk and never transmitted. Detection can be turned off in Settings.</li>
+        </ul>
+
+        <h2 id="network">Network calls</h2>
+        <p>Two, and only two:</p>
+        <ol>
+          <li><strong>The media site.</strong> yt-dlp connects directly from your Mac to the site you gave it. If you enabled login cookies, they are handed to yt-dlp for that request and go to that site only.</li>
+          <li><strong>The update check.</strong> Sparkle fetches a signed appcast from GitHub Releases. It sends no identifier, and you can disable automatic checks in Settings.</li>
+        </ol>
+        <p>There is no other outbound traffic from the app: no pings, no feature flags, no remote configuration.</p>
+
+        <h2 id="site">This website</h2>
+        <p>reel.waylake.com is static files. It sets no cookies, runs no analytics, loads no third-party fonts, scripts or images, and embeds nothing. The only JavaScript reads the latest release tag and size from GitHub's public API so the version on this page is current; that request goes from your browser to GitHub, not to us. GitHub may log it under <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>.</p>
+
+        <h2 id="contact">Contact</h2>
+        <p>Questions, or a correction to this policy: <a href="mailto:waylake@waylake.com">waylake@waylake.com</a>. The canonical markdown version lives in the repository at <a href="https://github.com/waylake/reel/blob/main/PRIVACY.md">PRIVACY.md</a>.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="icon.png" width="34" height="34" alt="">
+        <p><b>Reel</b>A native macOS downloader. Made by <a href="https://waylake.com">WAYLAKE</a> in Seoul. MIT licensed.</p>
+      </div>
+      <div>
+        <h3>Product</h3>
+        <ul>
+          <li><a href="./#install">Install</a></li>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a class="changelog" href="changelog.html">Changelog</a></li>
+          <li><a href="https://github.com/waylake/reel/releases">Releases</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Project</h3>
+        <ul>
+          <li><a href="https://github.com/waylake/reel">GitHub</a></li>
+          <li><a href="https://github.com/waylake/reel/issues">Issues</a></li>
+          <li><a href="https://github.com/waylake/reel/blob/main/CONTRIBUTING.md">Contributing</a></li>
+          <li><a href="https://github.com/waylake/reel/blob/main/SECURITY.md">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="licenses.html">Licenses</a></li>
+          <li><a href="mailto:waylake@waylake.com">waylake@waylake.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>© 2026 WAYLAKE · Reel v<span data-version>1.3.2</span></span>
+      <span>This site has no cookies, no analytics, and loads nothing from a third party.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/site.js" defer></script>
+</body>
+</html>

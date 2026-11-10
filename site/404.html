@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not found — Reel</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 32px;
+    background: #07080a;
+    color: #edeff2;
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Apple SD Gothic Neo", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(46% 40% at 70% 10%, rgba(56,197,184,.12), transparent 70%);
+  }
+  main { max-width: 560px; }
+  .k {
+    margin: 0 0 20px;
+    font: 500 11px/1 ui-monospace, "SF Mono", Menlo, monospace;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: #757d87;
+  }
+  h1 { margin: 0 0 14px; font-size: clamp(1.9rem, 5vw, 2.9rem); font-weight: 600; letter-spacing: -.04em; line-height: 1.05; }
+  p { margin: 0; color: #a2a9b3; }
+  a {
+    display: inline-flex;
+    align-items: center;
+    height: 46px;
+    margin-top: 28px;
+    padding: 0 20px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #3dcdbf, #16a99c);
+    color: #04211e;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  a:hover { filter: brightness(1.04); }
+</style>
+</head>
+<body>
+<main>
+  <p class="k">404</p>
+  <h1>That page isn't here.</h1>
+  <p>The download is still where it should be.</p>
+  <a id="home" href="/">Back to Reel</a>
+</main>
+<script>
+  // GitHub Pages가 /reel/ 아래에 있을 때도, 커스텀 도메인 루트일 때도 동작한다.
+  document.getElementById("home").href =
+    location.pathname.indexOf("/reel/") === 0 ? "/reel/" : "/";
+</script>
+</body>
+</html>

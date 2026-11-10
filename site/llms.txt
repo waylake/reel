@@ -1,0 +1,31 @@
+# Reel
+
+> Reel is a native macOS menu bar video downloader. Copy a link, press ⌘V, and it downloads. It runs yt-dlp and ffmpeg locally and is free and open source under the MIT license, with no account, no analytics and no telemetry.
+
+## Facts
+
+- Platform: macOS 14.0 (Sonoma) or later; universal binary (Apple silicon and Intel).
+- Price: free. MIT license. No paid tier, no ads.
+- Engine: yt-dlp (Unlicense) and ffmpeg, both bundled with the app and updatable in place.
+- Install: DMG/zip from GitHub Releases, or `brew install --cask waylake/tap/reel`.
+- Latest version: 1.3.2, released 2026-11-07, about 59 MB.
+- Updates: Sparkle 2 with EdDSA-signed appcasts. Signed ad-hoc; not notarized by Apple as of 2026-11.
+- Interface language: Korean today; the site is English and Korean.
+- What it does not do: no DRM circumvention, no accounts, no browser extension, no telemetry.
+- Source: https://github.com/waylake/reel
+
+## Pages
+
+- [Home](https://reel.waylake.com/): what Reel is, how the ⌘V workflow works, install options, FAQ.
+- [Documentation](https://reel.waylake.com/docs): first launch, failed downloads, YouTube 403 and bot-check errors, cookies, engine updates, file locations, uninstall.
+- [Changelog](https://reel.waylake.com/changelog): every release with dates.
+- [Privacy](https://reel.waylake.com/privacy): what the app stores and the only two network calls it makes.
+- [Licenses](https://reel.waylake.com/licenses): MIT for Reel; yt-dlp, ffmpeg, Sparkle and icon licenses.
+- [한국어](https://reel.waylake.com/ko/): the same home page in Korean.
+
+## Common questions
+
+- A download fails with 403 or "The page needs to be reloaded": update the engine in Settings → Advanced → yt-dlp → Update, then retry. YouTube changes its clients often; the yt-dlp update is the fix.
+- "Sign in to confirm you're not a bot": an IP-level judgement, not fixed by retrying. Use cookies from a signed-in browser.
+- macOS refuses to open the app: it is not notarized. Right-click the app → Open once, or install with Homebrew, which avoids the quarantine prompt.
+- Where files go: `~/Movies/Reel` by default; queue at `~/Library/Application Support/Reel/queue.json`.

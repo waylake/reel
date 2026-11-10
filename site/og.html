@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reel — Open Graph card</title>
+<style>
+  @page { margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1200px; height: 630px; }
+  body {
+    background: #07080a;
+    color: #edeff2;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    position: relative;
+  }
+  .glow {
+    position: absolute; inset: -220px -120px auto 40%;
+    height: 720px;
+    background: radial-gradient(46% 52% at 62% 30%, rgba(56,197,184,.22), transparent 70%);
+  }
+  .card { position: relative; padding: 76px 80px; height: 100%; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; gap: 14px; }
+  .top img { width: 56px; height: 56px; border-radius: 13px; }
+  .top b { font-size: 30px; font-weight: 600; letter-spacing: -.02em; }
+  h1 {
+    margin: 54px 0 0;
+    font-size: 104px;
+    line-height: .95;
+    letter-spacing: -.05em;
+    font-weight: 600;
+  }
+  .key {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.2em; height: 1.2em; padding: 0;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: .2em;
+    background: linear-gradient(180deg,#1b2026,#12161a);
+    box-shadow: 0 2px 0 rgba(0,0,0,.6);
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: .7em; font-weight: 500;
+    transform: translateY(-.05em);
+  }
+  .sub {
+    margin-top: 30px;
+    font-size: 27px;
+    line-height: 1.45;
+    color: #a2a9b3;
+    max-width: 760px;
+  }
+  .foot {
+    margin-top: auto;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font: 400 19px/1 ui-monospace, "SF Mono", monospace;
+    letter-spacing: .08em;
+    color: #757d87;
+  }
+  .foot .accent { color: #38c5b8; }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="card">
+    <div class="top"><img src="icon.png" alt=""><b>Reel</b></div>
+    <h1>Copy a link.<br>Press <span class="key">⌘</span><span class="key">V</span></h1>
+    <p class="sub">A native macOS downloader for YouTube and 1,800+ other sites. Free, open source, no account.</p>
+    <div class="foot">
+      <span>reel.waylake.com</span>
+      <span class="accent">macOS 14+ · Universal · MIT</span>
+    </div>
+  </div>
+</body>
+</html>

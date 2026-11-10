@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation — Reel</title>
+<meta name="description" content="Reel documentation: first launch, failed downloads, YouTube 403 and bot-check errors, cookies, engine updates, file locations and uninstall.">
+<meta name="theme-color" content="#07080a">
+<link rel="canonical" href="https://reel.waylake.com/docs">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="icon.png" width="22" height="22" alt="">Reel</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a class="opt" href="./#how">How it works</a>
+      <a href="./#install">Install</a>
+      <a href="docs.html" aria-current="page">Docs</a>
+      <a class="changelog" href="changelog.html">Changelog</a>
+      <a href="https://github.com/waylake/reel">GitHub</a>
+      <span class="lang"><a href="./" aria-current="true">EN</a><span class="slash" aria-hidden="true">/</span><a href="ko/">KO</a></span>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <div class="doc-head">
+      <p class="kicker">Documentation</p>
+      <div>
+        <h1>When something does not work.</h1>
+        <p>Reel is a front end for yt-dlp, and yt-dlp is in a permanent race with the sites it reads. Most failures are upstream changes, not app bugs. This page is ordered the way support should be: cheapest fix first.</p>
+      </div>
+    </div>
+
+    <div class="doc-body">
+      <nav class="doc-nav" aria-label="On this page">
+        <a href="#requirements">Requirements</a>
+        <a href="#first-launch">First launch</a>
+        <a href="#failures">A download failed</a>
+        <a href="#errors">Error messages</a>
+        <a href="#engine">The engine</a>
+        <a href="#cookies">Cookies</a>
+        <a href="#files">Files and data</a>
+        <a href="#updates">Updates</a>
+        <a href="#uninstall">Uninstall</a>
+        <a href="#legal">Legal</a>
+      </nav>
+
+      <div class="prose">
+        <h2 id="requirements">Requirements</h2>
+        <ul>
+          <li>macOS 14 Sonoma or later.</li>
+          <li>Apple silicon or Intel. The app and its bundled binaries are universal.</li>
+          <li>About 60 MB for the download; the installed app is larger because it carries yt-dlp and ffmpeg.</li>
+        </ul>
+
+        <h2 id="first-launch">First launch</h2>
+        <p>Reel is signed ad-hoc, not notarized by Apple. macOS will refuse to open it the first time, with a dialog that says the developer cannot be verified.</p>
+        <ol>
+          <li>Move <strong>Reel.app</strong> to <code>/Applications</code>.</li>
+          <li>Right-click the app and choose <strong>Open</strong>. Confirm once.</li>
+          <li>After that it launches normally, including after updates.</li>
+        </ol>
+        <p>If you installed with Homebrew, there is no prompt — the cask clears the quarantine attribute after install.</p>
+
+        <h2 id="failures">A download failed</h2>
+        <p>Work down this list. In practice, step 1 resolves most failures.</p>
+        <ol>
+          <li><strong>Update the engine.</strong> <strong>Settings → Advanced → yt-dlp → Update</strong>. The new binary takes effect immediately; there is no restart.</li>
+          <li><strong>Retry.</strong> Reel retries transient HTTP errors with exponential backoff on its own, but a manual retry after an update is often what clears a stale URL.</li>
+          <li><strong>Check the same URL in Terminal</strong> with <code>yt-dlp -v "URL"</code>. If it fails there too, the problem is upstream and no setting in Reel will fix it.</li>
+          <li><strong>Cookies.</strong> Age-restricted, members-only or private content needs a signed-in session. See <a href="#cookies">Cookies</a>.</li>
+          <li><strong>Report it.</strong> Include the exact error line and the yt-dlp version shown in Settings. <a href="https://github.com/waylake/reel/issues">Open an issue</a>.</li>
+        </ol>
+
+        <h2 id="errors">Error messages</h2>
+        <table>
+          <thead>
+            <tr><th>Message</th><th>What it means</th><th>What to do</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>HTTP Error 403: Forbidden</code></td>
+              <td>YouTube refused the request, usually a stale signature or a changed client.</td>
+              <td>Update the engine, then retry.</td>
+            </tr>
+            <tr>
+              <td><code>The page needs to be reloaded</code></td>
+              <td>Bot detection tripped; it can appear and clear on its own.</td>
+              <td>Retry, then update. Reel does both automatically.</td>
+            </tr>
+            <tr>
+              <td><code>Sign in to confirm you're not a bot</code></td>
+              <td>An IP-level judgement. Retrying will not clear it.</td>
+              <td>Try cookies from a signed-in browser, a different network, or wait it out.</td>
+            </tr>
+            <tr>
+              <td><code>This video is age-restricted</code></td>
+              <td>The account in the cookies cannot play it.</td>
+              <td>Pass cookies from a browser that is signed in and can play the video.</td>
+            </tr>
+            <tr>
+              <td><code>Members-only</code> / <code>Private video</code></td>
+              <td>Requires the account that has access.</td>
+              <td>Cookies from that account.</td>
+            </tr>
+            <tr>
+              <td><code>429</code>, <code>502</code>, <code>503</code>, timeouts</td>
+              <td>Transient network or rate limiting.</td>
+              <td>Nothing. Reel backs off and retries; lower concurrency in Settings if it persists.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="engine">The engine</h2>
+        <p>Reel bundles two binaries and never implements extraction itself:</p>
+        <ul>
+          <li><strong>yt-dlp</strong> — reads the page, negotiates formats, downloads. Unlicense.</li>
+          <li><strong>ffmpeg</strong> — merges separate video and audio streams, converts audio, writes metadata and subtitles.</li>
+        </ul>
+        <p>The bundled copy is a fallback. If you update yt-dlp from Settings, Reel keeps the newer binary in <code>~/Library/Application Support/Reel/bin/yt-dlp</code> and prefers it over the one inside the app. That way an app update never silently rolls the engine back.</p>
+        <p>Reel does not pass its own <code>--extractor-args</code> client overrides. The yt-dlp defaults are maintained by the people who track YouTube every day, and hand-picked clients are the most common cause of avoidable breakage.</p>
+
+        <h2 id="cookies">Cookies</h2>
+        <p>For content that needs a signed-in session, choose a browser in <strong>Settings → Downloads → Login cookies</strong>. Reel reads the cookie store directly on your Mac and hands the cookies to yt-dlp for that request only. They are not uploaded, cached or logged.</p>
+        <p>Safari, Chrome and Firefox are supported. If the cookie export fails — for example a locked keychain or a browser that changed its storage format — Reel falls back to a normal signed-out download instead of failing the item.</p>
+
+        <h2 id="files">Files and data</h2>
+        <table>
+          <tbody>
+            <tr><td>Downloads</td><td><code>~/Movies/Reel</code>, configurable in Settings → General</td></tr>
+            <tr><td>Queue</td><td><code>~/Library/Application Support/Reel/queue.json</code></td></tr>
+            <tr><td>Updated engine</td><td><code>~/Library/Application Support/Reel/bin/</code></td></tr>
+            <tr><td>Settings</td><td>macOS UserDefaults for <code>com.waylake.reel</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="updates">Updates</h2>
+        <p>Reel updates itself with <a href="https://sparkle-project.org">Sparkle</a>: the app reads a signed appcast, downloads a signed archive, and installs it on relaunch. There is no account and no update server of ours — the feed is a static file on GitHub Releases.</p>
+        <p>You can turn automatic checks off in Settings. Manual: <strong>Reel → Check for Updates</strong>.</p>
+
+        <h2 id="uninstall">Uninstall</h2>
+        <pre><code>rm -rf /Applications/Reel.app
+rm -rf ~/Library/Application\ Support/Reel
+defaults delete com.waylake.reel</code></pre>
+        <p>Your downloaded files are not touched. With Homebrew: <code>brew uninstall --cask reel</code> and <code>brew zap --cask reel</code> if you also want the support files gone.</p>
+
+        <h2 id="legal">Legal</h2>
+        <p>Reel is a local tool. It does not host, index or distribute media, and it does not circumvent DRM. Whether a download is lawful depends on the content, the site's terms and where you live. Download what you own, what is offered under a licence that permits it, or what your local law allows. You are responsible for what you save.</p>
+        <p>Issues with a specific site are usually fixed upstream in yt-dlp before they are fixed in Reel. Checking <a href="https://github.com/yt-dlp/yt-dlp/issues">yt-dlp's issue tracker</a> first saves everyone time.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="icon.png" width="34" height="34" alt="">
+        <p><b>Reel</b>A native macOS downloader. Made by <a href="https://waylake.com">WAYLAKE</a> in Seoul. MIT licensed.</p>
+      </div>
+      <div>
+        <h3>Product</h3>
+        <ul>
+          <li><a href="./#install">Install</a></li>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a class="changelog" href="changelog.html">Changelog</a></li>
+          <li><a href="https://github.com/waylake/reel/releases">Releases</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Project</h3>
+        <ul>
+          <li><a href="https://github.com/waylake/reel">GitHub</a></li>
+          <li><a href="https://github.com/waylake/reel/issues">Issues</a></li>
+          <li><a href="https://github.com/waylake/reel/blob/main/CONTRIBUTING.md">Contributing</a></li>
+          <li><a href="https://github.com/waylake/reel/blob/main/SECURITY.md">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="licenses.html">Licenses</a></li>
+          <li><a href="mailto:waylake@waylake.com">waylake@waylake.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>© 2026 WAYLAKE · Reel v<span data-version>1.3.2</span></span>
+      <span>This site has no cookies, no analytics, and loads nothing from a third party.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/site.js" defer></script>
+</body>
+</html>
