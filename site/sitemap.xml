@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://reel.waylake.com/</loc>
+    <loc>https://waylake.github.io/reel/</loc>
     <lastmod>2026-11-10</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://reel.waylake.com/ko/</loc>
+    <loc>https://waylake.github.io/reel/ko/</loc>
     <lastmod>2026-11-10</lastmod>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://reel.waylake.com/docs</loc>
+    <loc>https://waylake.github.io/reel/docs.html</loc>
     <lastmod>2026-11-10</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reel.waylake.com/changelog</loc>
+    <loc>https://waylake.github.io/reel/changelog.html</loc>
     <lastmod>2026-11-10</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://reel.waylake.com/privacy</loc>
+    <loc>https://waylake.github.io/reel/privacy.html</loc>
     <lastmod>2026-11-10</lastmod>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://reel.waylake.com/licenses</loc>
+    <loc>https://waylake.github.io/reel/licenses.html</loc>
     <lastmod>2026-11-10</lastmod>
     <priority>0.3</priority>
   </url>

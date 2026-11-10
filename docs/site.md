@@ -56,6 +56,19 @@ CNAME을 GitHub Pages로 바꾸기 전까지는 `waylake.github.io/reel/`에서 
 `site/og.png` (1200×630). 아이콘·제목·버전을 얹은 정적 이미지 하나뿐이므로 필요할 때 다시 만든다.
 현재 파일은 `og.html`을 브라우저로 1200×630에 렌더해 캡처한 것이다.
 
+## URL과 canonical
+
+지금 배포 주소는 **https://waylake.github.io/reel/** 이고, canonical·OG·sitemap·llms.txt가 모두 이 주소를 쓴다.
+`reel.waylake.com`은 아직 `*.waylake.com` 와일드카드로 dev1을 가리키므로 연결하지 않았다.
+
+커스텀 도메인을 붙인 뒤에는 아래를 한 번에 바꾸고, `site/CNAME`을 추가한다.
+
+```sh
+cd site
+grep -rl 'https://waylake.github.io/reel' . | xargs sed -i '' 's|https://waylake.github.io/reel|https://reel.waylake.com|g'
+printf 'reel.waylake.com\n' > CNAME
+```
+
 ## 남은 일
 
 - **공증(notarization)**: 앱은 아직 ad-hoc 서명이라 첫 실행에 우클릭 → 열기가 필요하다.

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://reel.waylake.com/sitemap.xml
+Sitemap: https://waylake.github.io/reel/sitemap.xml

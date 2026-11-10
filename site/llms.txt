@@ -16,12 +16,12 @@
 
 ## Pages
 
-- [Home](https://reel.waylake.com/): what Reel is, how the ⌘V workflow works, install options, FAQ.
-- [Documentation](https://reel.waylake.com/docs): first launch, failed downloads, YouTube 403 and bot-check errors, cookies, engine updates, file locations, uninstall.
-- [Changelog](https://reel.waylake.com/changelog): every release with dates.
-- [Privacy](https://reel.waylake.com/privacy): what the app stores and the only two network calls it makes.
-- [Licenses](https://reel.waylake.com/licenses): MIT for Reel; yt-dlp, ffmpeg, Sparkle and icon licenses.
-- [한국어](https://reel.waylake.com/ko/): the same home page in Korean.
+- [Home](https://waylake.github.io/reel/): what Reel is, how the ⌘V workflow works, install options, FAQ.
+- [Documentation](https://waylake.github.io/reel/docs.html): first launch, failed downloads, YouTube 403 and bot-check errors, cookies, engine updates, file locations, uninstall.
+- [Changelog](https://waylake.github.io/reel/changelog.html): every release with dates.
+- [Privacy](https://waylake.github.io/reel/privacy.html): what the app stores and the only two network calls it makes.
+- [Licenses](https://waylake.github.io/reel/licenses.html): MIT for Reel; yt-dlp, ffmpeg, Sparkle and icon licenses.
+- [한국어](https://waylake.github.io/reel/ko/): the same home page in Korean.
 
 ## Common questions
 
